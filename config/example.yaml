@@ -22,13 +22,14 @@ custom_structs:
       - name: EngineOn
         type: bool
 
-  - name: car
+  - name: VehicleStatus2
     fields:
-      - name: surnames
-        type: "[]string"
-      - name: age
+      - name: Speed
         type: int
-
+      - name: Direction
+        type: string
+      - name: EngineOn
+        type: bool
 # Moved interface details to the root level
 name: Vehicle
 concrete: Car
