@@ -1,0 +1,89 @@
+package cmd
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/jackclarke/GoStubGen/internal/generator"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+)
+
+// Config structure to match the YAML file format
+type Config struct {
+	Package        string                 `yaml:"package"`
+	PackageImports []string               `yaml:"package_imports"`
+	CustomStructs  []generator.StructSpec `yaml:"custom_structs"`
+	Name           string                 `yaml:"name"`
+	Methods        []generator.Method     `yaml:"methods"`
+	Concrete       string                 `yaml:"concrete"`
+}
+
+var configPath string
+
+var generateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generate Go code from a YAML config",
+	Run: func(cmd *cobra.Command, args []string) {
+		data, err := os.ReadFile(configPath)
+		if err != nil {
+			log.Fatalf("Failed to read config file: %v", err)
+		}
+
+		var config Config
+		err = yaml.Unmarshal(data, &config)
+		if err != nil {
+			log.Fatalf("Invalid YAML format: %v", err)
+		}
+
+		// Generate custom structs (excluding the one implementing the interface)
+		if err := generator.GenerateStructs(config.CustomStructs, config.Concrete); err != nil {
+			log.Fatalf("Error generating custom structs: %v", err)
+		}
+
+		// Generate the interface
+		spec := generator.InterfaceSpec{
+			Package:  config.Package,
+			Name:     config.Name,
+			Methods:  config.Methods,
+			Concrete: config.Concrete,
+		}
+		if err := generator.GenerateInterface(spec); err != nil {
+			log.Fatalf("Error generating interface: %v", err)
+		}
+
+		// Find the struct that matches the concrete implementation (Car)
+		var structSpec generator.StructSpec
+		found := false
+		for _, s := range config.CustomStructs {
+			if s.Name == config.Concrete {
+				structSpec = s
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			log.Fatalf("Error: No struct definition found for concrete type '%s'", config.Concrete)
+		}
+
+		// Generate the struct and methods together in one file
+		if err := generator.GenerateConcreteType(spec, structSpec); err != nil {
+			log.Fatalf("Error generating struct: %v", err)
+		}
+
+		// Generate the mock implementation
+		if err := generator.GenerateMock(spec, structSpec); err != nil {
+			log.Fatalf("Error generating mock: %v", err)
+		}
+
+		fmt.Println("Code generation complete!")
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to YAML config file")
+	generateCmd.MarkFlagRequired("config")
+}

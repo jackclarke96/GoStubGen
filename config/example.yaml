@@ -1,0 +1,133 @@
+package_imports:
+  - fmt
+  - errors
+  - math
+
+package: vehicle
+
+custom_structs:
+  - name: Car
+    fields:
+      - name: doors
+        type: int
+      - name: insured
+        type: bool
+
+  - name: VehicleStatus
+    fields:
+      - name: Speed
+        type: int
+      - name: Direction
+        type: string
+      - name: EngineOn
+        type: bool
+
+  - name: car
+    fields:
+      - name: surnames
+        type: "[]string"
+      - name: age
+        type: int
+
+# Moved interface details to the root level
+name: Vehicle
+concrete: Car
+methods:
+  - name: getTopSpeed
+    inputs: []
+    outputs:
+      - type: int
+
+  - name: turn
+    inputs:
+      - name: dir
+        type: string
+    outputs:
+      - name: newDir
+        type: string
+
+  - name: reverse
+    inputs: []
+    outputs:
+      - type: string
+      - type: error
+
+  - name: accelerate
+    inputs:
+      - name: speed
+        type: int
+      - name: unit
+        type: string
+    outputs:
+      - name: newSpeed
+        type: int
+      - name: err
+        type: error
+
+  - name: isMoving
+    inputs: []
+    outputs:
+      - type: bool
+
+  - name: honk
+    inputs:
+      - name: times
+        type: int
+    outputs: []
+
+  - name: getEngineSpecs
+    inputs: []
+    outputs:
+      - name: power
+        type: int
+      - name: fuelType
+        type: string
+
+  - name: applyBrakes
+    inputs:
+      - name: force
+        type: float64
+    outputs:
+      - type: bool
+
+  - name: changeGears
+    inputs:
+      - name: gear
+        type: int
+    outputs:
+      - name: prevGear
+        type: int
+      - name: newGear
+        type: int
+
+  - name: telemetry
+    inputs: []
+    outputs:
+      - type: "map[string]float64"
+
+  - name: getPassengers
+    inputs: []
+    outputs:
+      - type: "[]string"
+
+  - name: loadCargo
+    inputs:
+      - name: items
+        type: "[]string"
+    outputs:
+      - name: remainingCapacity
+        type: int
+      - name: err
+        type: error
+
+  - name: getVehicleStatus
+    inputs: []
+    outputs:
+      - type: VehicleStatus
+
+  - name: updateStatus
+    inputs:
+      - name: status
+        type: VehicleStatus
+    outputs:
+      - type: error

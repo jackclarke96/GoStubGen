@@ -1,0 +1,26 @@
+{
+    "name": "Vehicle",
+    "methods": [
+      {
+        "name": "GetUser",
+        "inputs": [
+          { "name": "id", "type": "int" }
+        ],
+        "outputs": [
+          { "type": "User" },
+          { "type": "error" }
+        ]
+      },
+      {
+        "name": "CreateUser",
+        "inputs": [
+          { "name": "user", "type": "User" }
+        ],
+        "outputs": [
+          { "type": "error" }
+        ]
+      }
+    ],
+    "concrete": "UserServiceImpl"
+  }
+  
