@@ -48,7 +48,7 @@ type mockVehicleConfig struct {
 
 // mockVehicle embeds Car and its mocks
 type mockVehicle struct {
-	car   Vehicle
+	car   Car
 	mocks mockVehicleConfig
 }
 
@@ -56,7 +56,7 @@ type mockVehicle struct {
 func vehicleMock() Vehicle {
 	car := NewCar()
 	return mockVehicle{
-		car:   car,
+		car:   *car,
 		mocks: mockVehicleConfig{},
 	}
 }
@@ -66,9 +66,13 @@ func vehicleMock() Vehicle {
 // getTopSpeed overrides the method to return the mock response
 func (m mockVehicle) getTopSpeed() int {
 	if m.mocks.mockGetTopSpeed {
+
 		return m.mocks.getTopSpeedResponse()
+
 	}
+
 	return m.car.getTopSpeed()
+
 }
 
 // setGetTopSpeedResponse sets the response for getTopSpeed
@@ -91,9 +95,13 @@ func (m mockVehicle) disableGetTopSpeedResponse() {
 // turn overrides the method to return the mock response
 func (m mockVehicle) turn(dir string) string {
 	if m.mocks.mockTurn {
+
 		return m.mocks.turnResponse(dir)
+
 	}
+
 	return m.car.turn(dir)
+
 }
 
 // setTurnResponse sets the response for turn
@@ -116,9 +124,13 @@ func (m mockVehicle) disableTurnResponse() {
 // reverse overrides the method to return the mock response
 func (m mockVehicle) reverse() (string, error) {
 	if m.mocks.mockReverse {
+
 		return m.mocks.reverseResponse()
+
 	}
+
 	return m.car.reverse()
+
 }
 
 // setReverseResponse sets the response for reverse
@@ -141,9 +153,13 @@ func (m mockVehicle) disableReverseResponse() {
 // accelerate overrides the method to return the mock response
 func (m mockVehicle) accelerate(speed int, unit string) (int, error) {
 	if m.mocks.mockAccelerate {
+
 		return m.mocks.accelerateResponse(speed, unit)
+
 	}
+
 	return m.car.accelerate(speed, unit)
+
 }
 
 // setAccelerateResponse sets the response for accelerate
@@ -166,9 +182,13 @@ func (m mockVehicle) disableAccelerateResponse() {
 // isMoving overrides the method to return the mock response
 func (m mockVehicle) isMoving() bool {
 	if m.mocks.mockIsMoving {
+
 		return m.mocks.isMovingResponse()
+
 	}
+
 	return m.car.isMoving()
+
 }
 
 // setIsMovingResponse sets the response for isMoving
@@ -191,9 +211,13 @@ func (m mockVehicle) disableIsMovingResponse() {
 // honk overrides the method to return the mock response
 func (m mockVehicle) honk(times int) {
 	if m.mocks.mockHonk {
-		return m.mocks.honkResponse(times)
+
+		m.mocks.honkResponse(times)
+
 	}
-	return m.car.honk(times)
+
+	m.car.honk(times)
+
 }
 
 // setHonkResponse sets the response for honk
@@ -216,9 +240,13 @@ func (m mockVehicle) disableHonkResponse() {
 // getEngineSpecs overrides the method to return the mock response
 func (m mockVehicle) getEngineSpecs() (int, string) {
 	if m.mocks.mockGetEngineSpecs {
+
 		return m.mocks.getEngineSpecsResponse()
+
 	}
+
 	return m.car.getEngineSpecs()
+
 }
 
 // setGetEngineSpecsResponse sets the response for getEngineSpecs
@@ -241,9 +269,13 @@ func (m mockVehicle) disableGetEngineSpecsResponse() {
 // applyBrakes overrides the method to return the mock response
 func (m mockVehicle) applyBrakes(force float64) bool {
 	if m.mocks.mockApplyBrakes {
+
 		return m.mocks.applyBrakesResponse(force)
+
 	}
+
 	return m.car.applyBrakes(force)
+
 }
 
 // setApplyBrakesResponse sets the response for applyBrakes
@@ -266,9 +298,13 @@ func (m mockVehicle) disableApplyBrakesResponse() {
 // changeGears overrides the method to return the mock response
 func (m mockVehicle) changeGears(gear int) (int, int) {
 	if m.mocks.mockChangeGears {
+
 		return m.mocks.changeGearsResponse(gear)
+
 	}
+
 	return m.car.changeGears(gear)
+
 }
 
 // setChangeGearsResponse sets the response for changeGears
@@ -291,9 +327,13 @@ func (m mockVehicle) disableChangeGearsResponse() {
 // telemetry overrides the method to return the mock response
 func (m mockVehicle) telemetry() map[string]float64 {
 	if m.mocks.mockTelemetry {
+
 		return m.mocks.telemetryResponse()
+
 	}
+
 	return m.car.telemetry()
+
 }
 
 // setTelemetryResponse sets the response for telemetry
@@ -316,9 +356,13 @@ func (m mockVehicle) disableTelemetryResponse() {
 // getPassengers overrides the method to return the mock response
 func (m mockVehicle) getPassengers() []string {
 	if m.mocks.mockGetPassengers {
+
 		return m.mocks.getPassengersResponse()
+
 	}
+
 	return m.car.getPassengers()
+
 }
 
 // setGetPassengersResponse sets the response for getPassengers
@@ -341,9 +385,13 @@ func (m mockVehicle) disableGetPassengersResponse() {
 // loadCargo overrides the method to return the mock response
 func (m mockVehicle) loadCargo(items []string) (int, error) {
 	if m.mocks.mockLoadCargo {
+
 		return m.mocks.loadCargoResponse(items)
+
 	}
+
 	return m.car.loadCargo(items)
+
 }
 
 // setLoadCargoResponse sets the response for loadCargo
@@ -366,9 +414,13 @@ func (m mockVehicle) disableLoadCargoResponse() {
 // getVehicleStatus overrides the method to return the mock response
 func (m mockVehicle) getVehicleStatus() VehicleStatus {
 	if m.mocks.mockGetVehicleStatus {
+
 		return m.mocks.getVehicleStatusResponse()
+
 	}
+
 	return m.car.getVehicleStatus()
+
 }
 
 // setGetVehicleStatusResponse sets the response for getVehicleStatus
@@ -391,9 +443,13 @@ func (m mockVehicle) disableGetVehicleStatusResponse() {
 // updateStatus overrides the method to return the mock response
 func (m mockVehicle) updateStatus(status VehicleStatus) error {
 	if m.mocks.mockUpdateStatus {
+
 		return m.mocks.updateStatusResponse(status)
+
 	}
+
 	return m.car.updateStatus(status)
+
 }
 
 // setUpdateStatusResponse sets the response for updateStatus

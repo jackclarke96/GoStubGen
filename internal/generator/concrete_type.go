@@ -66,38 +66,3 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 		Common:    common,
 	})
 }
-
-// GenerateConstructor generates a basic constructor for the given struct
-func GenerateConstructor(structSpec StructSpec) error {
-	const constructorTemplate = `package generated
-
-// New{{ .Name }} creates a new instance of {{ .Name }} with default values
-func New{{ .Name }}() *{{ .Name }} {
-	return &{{ .Name }}{
-		{{- range .Fields }}
-		{{ .Name }}: {{ getDefaultReturnValue .Type }},
-		{{- end }}
-	}
-}
-`
-
-	// Ensure "generated/" directory exists
-	if err := os.MkdirAll("generated", os.ModePerm); err != nil {
-		return fmt.Errorf("failed to create 'generated' directory: %w", err)
-	}
-
-	file, err := os.Create(fmt.Sprintf("generated/%s.go", structSpec.Name))
-	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
-	}
-	defer file.Close()
-
-	tmpl, err := template.New("constructor").Funcs(template.FuncMap{
-		"getDefaultReturnValue": getDefaultReturnValue,
-	}).Parse(constructorTemplate)
-	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
-	}
-
-	return tmpl.Execute(file, structSpec)
-}
