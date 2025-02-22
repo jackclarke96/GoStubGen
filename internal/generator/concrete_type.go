@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -41,7 +42,7 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	filePath := fmt.Sprintf("generated/%s.go", structSpec.Name)
+	filePath := fmt.Sprintf("generated/%s.go", strings.ToLower(structSpec.Name))
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -49,7 +50,7 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 	defer file.Close()
 
 	tmpl, err := template.New("struct").Funcs(template.FuncMap{
-		"getDefaultReturnValue": getDefaultReturnValue,
+		"getDefaultReturnValue": getZeroVal,
 	}).Parse(structTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)

@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -27,7 +28,7 @@ type {{ .Struct.Name }} struct {
 			continue
 		}
 
-		filePath := fmt.Sprintf("generated/%s.go", structDef.Name)
+		filePath := fmt.Sprintf("generated/%s.go", strings.ToLower(structDef.Name))
 		file, err := os.Create(filePath)
 		if err != nil {
 			return fmt.Errorf("failed to create file: %w", err)

@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -26,7 +27,7 @@ type {{ .Interface.Name }} interface {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	file, err := os.Create(fmt.Sprintf("generated/%s.go", spec.Name))
+	file, err := os.Create(fmt.Sprintf("generated/%s.go", strings.ToLower(spec.Name)))
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}

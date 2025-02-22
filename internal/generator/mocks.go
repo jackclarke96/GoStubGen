@@ -75,7 +75,7 @@ func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	filePath := fmt.Sprintf("generated/%s_mock.go", structSpec.Name)
+	filePath := fmt.Sprintf("generated/%s_mock.go", strings.ToLower(structSpec.Name))
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
