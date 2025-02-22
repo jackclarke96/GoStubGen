@@ -26,14 +26,14 @@ func New{{ .Struct.Name }}() *{{ .Struct.Name }} {
 	}
 }
 
-{{- range .Interface.Methods }}
+{{ range .Interface.Methods }}
 func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}) ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}) {
 	// TODO: Implement
 	{{- if gt (len .Outputs) 0 }}
 	return {{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ getDefaultReturnValue .Type }}{{ end }}
 	{{- end }}
 }
-{{- end }}
+{{ end }}
 `
 
 	// Ensure "generated/" directory exists

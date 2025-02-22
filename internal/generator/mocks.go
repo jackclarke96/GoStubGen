@@ -12,11 +12,11 @@ func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) 
 
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
-{{- range .Methods }}
+{{ range .Methods }}
 	// {{ .Name }} flag and mock response
 	mock{{ title .Name }}     bool
 	{{ .Name }}Response func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}
-{{- end }}
+{{ end }}
 }
 
 // {{ .MockName }} embeds {{ .Concrete }} and its mocks
@@ -40,17 +40,17 @@ func {{ .MockFactory }}() {{ .Interface }} {
 // {{ .Name }} overrides the method to return the mock response
 func (m {{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
 	if m.mocks.mock{{ title .Name }} {
-		{{ if gt (len .Outputs) 0 }}
+		{{- if gt (len .Outputs) 0 }}
 		return m.mocks.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
-		{{ else }}
+		{{- else }}
 		m.mocks.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
-		{{ end }}
+		{{- end }}
 	}
-	{{ if gt (len .Outputs) 0 }}
+	{{- if gt (len .Outputs) 0 }}
 	return m.{{ $.ConcreteVar }}.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
-	{{ else }}
+	{{- else }}
 	m.{{ $.ConcreteVar }}.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
-	{{ end }}
+	{{- end }}
 }
 
 // set{{ title .Name }}Response sets the response for {{ .Name }}
