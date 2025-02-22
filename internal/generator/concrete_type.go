@@ -7,8 +7,8 @@ import (
 )
 
 // GenerateStruct generates a Go struct file with stub methods
-func GenerateConcreteType(spec InterfaceSpec, structSpec StructSpec) error {
-	const structTemplate = `package generated
+func GenerateConcreteType(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
+	const structTemplate = `package {{ .Common.Package }}
 
 // {{ .Struct.Name }} is the concrete implementation of {{ .Interface.Name }}
 type {{ .Struct.Name }} struct {
@@ -59,9 +59,11 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 	return tmpl.Execute(file, struct {
 		Interface InterfaceSpec
 		Struct    StructSpec
+		Common    CommonSpec
 	}{
 		Interface: spec,
 		Struct:    structSpec,
+		Common:    common,
 	})
 }
 
@@ -84,7 +86,7 @@ func New{{ .Name }}() *{{ .Name }} {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	file, err := os.Create(fmt.Sprintf("generated/%s_constructor.go", structSpec.Name))
+	file, err := os.Create(fmt.Sprintf("generated/%s.go", structSpec.Name))
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}

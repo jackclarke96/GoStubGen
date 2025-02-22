@@ -1,7 +1,7 @@
 package generator
 
-type PackageSpec struct {
-	// TODO
+type CommonSpec struct {
+	Package string `yaml:"package"`
 }
 
 // InterfaceSpec represents an interface definition
@@ -9,7 +9,6 @@ type InterfaceSpec struct {
 	Name     string   `yaml:"name"`
 	Methods  []Method `yaml:"methods"`
 	Concrete string   `yaml:"concrete"`
-	Package  string   `yaml:"package"`
 }
 
 // Method represents a method signature

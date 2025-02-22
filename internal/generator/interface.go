@@ -6,12 +6,12 @@ import (
 	"text/template"
 )
 
-func GenerateInterface(spec InterfaceSpec) error {
-	const interfaceTemplate = `package {{ .Package}}
+func GenerateInterface(spec InterfaceSpec, common CommonSpec) error {
+	const interfaceTemplate = `package {{ .Common.Package}}
 
-// {{ .Name }} defines the interface
-type {{ .Name }} interface {
-{{- range .Methods }}
+// {{ .Interface.Name }} defines the interface
+type {{ .Interface.Name }} interface {
+{{- range .Interface.Methods }}
 	{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}) ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }})
 {{- end }}
 }
@@ -33,5 +33,12 @@ type {{ .Name }} interface {
 
 	defer file.Close()
 
-	return tmpl.Execute(file, spec)
+	// Execute template with combined struct and interface data
+	return tmpl.Execute(file, struct {
+		Interface InterfaceSpec
+		Common    CommonSpec
+	}{
+		Interface: spec,
+		Common:    common,
+	})
 }

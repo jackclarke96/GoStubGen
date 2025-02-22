@@ -6,12 +6,12 @@ import (
 	"text/template"
 )
 
-func GenerateStructs(structs []StructSpec, concreteType string) error {
-	const structTemplate = `package generated
+func GenerateStructs(structs []StructSpec, common CommonSpec, concreteType string) error {
+	const structTemplate = `package {{ .Common.Package }}
 
-// {{ .Name }} is a user-defined struct
-type {{ .Name }} struct {
-{{- range .Fields }}
+// {{ .Struct.Name }} is a user-defined struct
+type {{ .Struct.Name }} struct {
+{{- range .Struct.Fields }}
     {{ .Name }} {{ .Type }}
 {{- end }}
 }`
@@ -39,7 +39,15 @@ type {{ .Name }} struct {
 			return fmt.Errorf("failed to parse template: %w", err)
 		}
 
-		if err := tmpl.Execute(file, structDef); err != nil {
+		combinedTemplate := struct {
+			Struct StructSpec
+			Common CommonSpec
+		}{
+			Struct: structDef,
+			Common: common,
+		}
+
+		if err := tmpl.Execute(file, combinedTemplate); err != nil {
 			return fmt.Errorf("failed to write struct file: %w", err)
 		}
 	}

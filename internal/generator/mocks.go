@@ -7,8 +7,8 @@ import (
 	"text/template"
 )
 
-func GenerateMock(spec InterfaceSpec, structSpec StructSpec) error {
-	const mockTemplate = `package generated
+func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
+	const mockTemplate = `package {{ .Package }}
 
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
@@ -28,7 +28,7 @@ type {{ .MockName }} struct {
 
 // {{ .MockFactory }} returns a new mock
 func {{ .MockFactory }}() {{ .Interface }} {
-	car := generated.New{{ .Concrete }}()
+	car := New{{ .Concrete }}()
 	return {{ .MockName }}{
 		car:   car,
 		mocks: {{ .MockConfigName }}{},
@@ -92,6 +92,7 @@ func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
 		MockConfigName string
 		MockFactory    string
 		Methods        []Method
+		Package        string
 	}{
 		Interface:      spec.Name,
 		Concrete:       structSpec.Name,
@@ -99,5 +100,6 @@ func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
 		MockConfigName: fmt.Sprintf("mock%sConfig", spec.Name),
 		MockFactory:    fmt.Sprintf("%sMock", strings.ToLower(spec.Name)),
 		Methods:        spec.Methods,
+		Package:        common.Package,
 	})
 }

@@ -37,19 +37,24 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Invalid YAML format: %v", err)
 		}
 
-		// Generate custom structs (excluding the one implementing the interface)
-		if err := generator.GenerateStructs(config.CustomStructs, config.Concrete); err != nil {
-			log.Fatalf("Error generating custom structs: %v", err)
-		}
-
 		// Generate the interface
-		spec := generator.InterfaceSpec{
-			Package:  config.Package,
+		interfaceSpec := generator.InterfaceSpec{
 			Name:     config.Name,
 			Methods:  config.Methods,
 			Concrete: config.Concrete,
 		}
-		if err := generator.GenerateInterface(spec); err != nil {
+
+		commonSpec := generator.CommonSpec{
+			Package: config.Package,
+		}
+
+		// Generate custom structs (excluding the one implementing the interface)
+		if err := generator.GenerateStructs(config.CustomStructs, commonSpec, config.Concrete); err != nil {
+			log.Fatalf("Error generating custom structs: %v", err)
+		}
+
+		// generate the interface
+		if err := generator.GenerateInterface(interfaceSpec, commonSpec); err != nil {
 			log.Fatalf("Error generating interface: %v", err)
 		}
 
@@ -69,12 +74,12 @@ var generateCmd = &cobra.Command{
 		}
 
 		// Generate the struct and methods together in one file
-		if err := generator.GenerateConcreteType(spec, structSpec); err != nil {
+		if err := generator.GenerateConcreteType(interfaceSpec, structSpec, commonSpec); err != nil {
 			log.Fatalf("Error generating struct: %v", err)
 		}
 
 		// Generate the mock implementation
-		if err := generator.GenerateMock(spec, structSpec); err != nil {
+		if err := generator.GenerateMock(interfaceSpec, structSpec, commonSpec); err != nil {
 			log.Fatalf("Error generating mock: %v", err)
 		}
 
