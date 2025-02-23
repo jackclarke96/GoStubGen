@@ -38,11 +38,11 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 `
 
 	// Ensure "generated/" directory exists
-	if err := os.MkdirAll("generated", os.ModePerm); err != nil {
+	if err := os.MkdirAll("generated/imported", os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	filePath := fmt.Sprintf("generated/%s.go", strings.ToLower(structSpec.Name))
+	filePath := fmt.Sprintf("generated/imported/%s.go", strings.ToLower(structSpec.Name))
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)

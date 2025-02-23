@@ -4,6 +4,7 @@ package_imports:
   - math
 
 package: vehicle
+importer: driver
 
 custom_structs:
   - name: Car

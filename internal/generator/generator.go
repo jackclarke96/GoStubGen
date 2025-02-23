@@ -1,7 +1,8 @@
 package generator
 
 type CommonSpec struct {
-	Package string `yaml:"package"`
+	Package  string `yaml:"package"`
+	Importer string `yaml:"importer"`
 }
 
 // InterfaceSpec represents an interface definition

@@ -434,7 +434,4 @@ func (m mockVehicle) disableUpdateStatusResponse() {
 }
 
 //todo:
-// - mocks should all have pointer as receiver
-// - mocks should be created somewhere diff to normal files
-// - mocks should be test file.
 // - mocks should import the package they are mocking.

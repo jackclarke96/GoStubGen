@@ -1,15 +1,17 @@
-package vehicle
+package driver
+
+import "github.com/jackclarke/GoStubGen/templates/vehicle"
 
 // mockVehicleConfig stores mock flags and responses
 type mockVehicleConfig struct {
 
 	// GetTopSpeed flag and mock response
 	mockGetTopSpeed     bool
-	GetTopSpeedResponse func() (int)
+	GetTopSpeedResponse func() int
 
 	// Turn flag and mock response
 	mockTurn     bool
-	TurnResponse func(string) (string)
+	TurnResponse func(string) string
 
 	// Reverse flag and mock response
 	mockReverse     bool
@@ -21,7 +23,7 @@ type mockVehicleConfig struct {
 
 	// IsMoving flag and mock response
 	mockIsMoving     bool
-	IsMovingResponse func() (bool)
+	IsMovingResponse func() bool
 
 	// Honk flag and mock response
 	mockHonk     bool
@@ -33,7 +35,7 @@ type mockVehicleConfig struct {
 
 	// ApplyBrakes flag and mock response
 	mockApplyBrakes     bool
-	ApplyBrakesResponse func(float64) (bool)
+	ApplyBrakesResponse func(float64) bool
 
 	// ChangeGears flag and mock response
 	mockChangeGears     bool
@@ -41,11 +43,11 @@ type mockVehicleConfig struct {
 
 	// Telemetry flag and mock response
 	mockTelemetry     bool
-	TelemetryResponse func() (map[string]float64)
+	TelemetryResponse func() map[string]float64
 
 	// GetPassengers flag and mock response
 	mockGetPassengers     bool
-	GetPassengersResponse func() ([]string)
+	GetPassengersResponse func() []string
 
 	// LoadCargo flag and mock response
 	mockLoadCargo     bool
@@ -53,32 +55,32 @@ type mockVehicleConfig struct {
 
 	// GetVehicleStatus flag and mock response
 	mockGetVehicleStatus     bool
-	GetVehicleStatusResponse func() (VehicleStatus)
+	GetVehicleStatusResponse func() vehicle.VehicleStatus
 
 	// UpdateStatus flag and mock response
 	mockUpdateStatus     bool
-	UpdateStatusResponse func(VehicleStatus) (error)
-
+	UpdateStatusResponse func(vehicle.VehicleStatus) error
 }
 
 // mockVehicle embeds Car and its mocks
 type mockVehicle struct {
-	car   Car
+	car   vehicle.Car
 	mocks mockVehicleConfig
 }
 
 // vehicleMock returns a new mock
-func vehicleMock() Vehicle {
-	car := NewCar()
-	return mockVehicle{
+func vehicleMock() *mockVehicle {
+	car := vehicle.NewCar()
+	return &mockVehicle{
 		car:   *car,
 		mocks: mockVehicleConfig{},
 	}
 }
+
 /* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
 
 // GetTopSpeed overrides the method to return the mock response
-func (m mockVehicle) GetTopSpeed() (int) {
+func (m *mockVehicle) GetTopSpeed() int {
 	if m.mocks.mockGetTopSpeed {
 		return m.mocks.GetTopSpeedResponse()
 	}
@@ -86,23 +88,24 @@ func (m mockVehicle) GetTopSpeed() (int) {
 }
 
 // setGetTopSpeedResponse sets the response for GetTopSpeed
-func (m mockVehicle) setGetTopSpeedResponse(resp func() (int)) {
+func (m *mockVehicle) setGetTopSpeedResponse(resp func() int) {
 	m.mocks.GetTopSpeedResponse = resp
 }
 
 // enableGetTopSpeedResponse turns the mock on
-func (m mockVehicle) enableGetTopSpeedResponse() {
+func (m *mockVehicle) enableGetTopSpeedResponse() {
 	m.mocks.mockGetTopSpeed = true
 }
 
 // disableGetTopSpeedResponse turns the mock off
-func (m mockVehicle) disableGetTopSpeedResponse() {
+func (m *mockVehicle) disableGetTopSpeedResponse() {
 	m.mocks.mockGetTopSpeed = false
 }
+
 /* -------------------------- Turn Mock Helpers --------------------------- */
 
 // Turn overrides the method to return the mock response
-func (m mockVehicle) Turn(dir string) (string) {
+func (m *mockVehicle) Turn(dir string) string {
 	if m.mocks.mockTurn {
 		return m.mocks.TurnResponse(dir)
 	}
@@ -110,23 +113,24 @@ func (m mockVehicle) Turn(dir string) (string) {
 }
 
 // setTurnResponse sets the response for Turn
-func (m mockVehicle) setTurnResponse(resp func(string) (string)) {
+func (m *mockVehicle) setTurnResponse(resp func(string) string) {
 	m.mocks.TurnResponse = resp
 }
 
 // enableTurnResponse turns the mock on
-func (m mockVehicle) enableTurnResponse() {
+func (m *mockVehicle) enableTurnResponse() {
 	m.mocks.mockTurn = true
 }
 
 // disableTurnResponse turns the mock off
-func (m mockVehicle) disableTurnResponse() {
+func (m *mockVehicle) disableTurnResponse() {
 	m.mocks.mockTurn = false
 }
+
 /* -------------------------- Reverse Mock Helpers --------------------------- */
 
 // Reverse overrides the method to return the mock response
-func (m mockVehicle) Reverse() (string, error) {
+func (m *mockVehicle) Reverse() (string, error) {
 	if m.mocks.mockReverse {
 		return m.mocks.ReverseResponse()
 	}
@@ -134,23 +138,24 @@ func (m mockVehicle) Reverse() (string, error) {
 }
 
 // setReverseResponse sets the response for Reverse
-func (m mockVehicle) setReverseResponse(resp func() (string, error)) {
+func (m *mockVehicle) setReverseResponse(resp func() (string, error)) {
 	m.mocks.ReverseResponse = resp
 }
 
 // enableReverseResponse turns the mock on
-func (m mockVehicle) enableReverseResponse() {
+func (m *mockVehicle) enableReverseResponse() {
 	m.mocks.mockReverse = true
 }
 
 // disableReverseResponse turns the mock off
-func (m mockVehicle) disableReverseResponse() {
+func (m *mockVehicle) disableReverseResponse() {
 	m.mocks.mockReverse = false
 }
+
 /* -------------------------- Accelerate Mock Helpers --------------------------- */
 
 // Accelerate overrides the method to return the mock response
-func (m mockVehicle) Accelerate(speed int, unit string) (int, error) {
+func (m *mockVehicle) Accelerate(speed int, unit string) (int, error) {
 	if m.mocks.mockAccelerate {
 		return m.mocks.AccelerateResponse(speed, unit)
 	}
@@ -158,23 +163,24 @@ func (m mockVehicle) Accelerate(speed int, unit string) (int, error) {
 }
 
 // setAccelerateResponse sets the response for Accelerate
-func (m mockVehicle) setAccelerateResponse(resp func(int, string) (int, error)) {
+func (m *mockVehicle) setAccelerateResponse(resp func(int, string) (int, error)) {
 	m.mocks.AccelerateResponse = resp
 }
 
 // enableAccelerateResponse turns the mock on
-func (m mockVehicle) enableAccelerateResponse() {
+func (m *mockVehicle) enableAccelerateResponse() {
 	m.mocks.mockAccelerate = true
 }
 
 // disableAccelerateResponse turns the mock off
-func (m mockVehicle) disableAccelerateResponse() {
+func (m *mockVehicle) disableAccelerateResponse() {
 	m.mocks.mockAccelerate = false
 }
+
 /* -------------------------- IsMoving Mock Helpers --------------------------- */
 
 // IsMoving overrides the method to return the mock response
-func (m mockVehicle) IsMoving() (bool) {
+func (m *mockVehicle) IsMoving() bool {
 	if m.mocks.mockIsMoving {
 		return m.mocks.IsMovingResponse()
 	}
@@ -182,23 +188,24 @@ func (m mockVehicle) IsMoving() (bool) {
 }
 
 // setIsMovingResponse sets the response for IsMoving
-func (m mockVehicle) setIsMovingResponse(resp func() (bool)) {
+func (m *mockVehicle) setIsMovingResponse(resp func() bool) {
 	m.mocks.IsMovingResponse = resp
 }
 
 // enableIsMovingResponse turns the mock on
-func (m mockVehicle) enableIsMovingResponse() {
+func (m *mockVehicle) enableIsMovingResponse() {
 	m.mocks.mockIsMoving = true
 }
 
 // disableIsMovingResponse turns the mock off
-func (m mockVehicle) disableIsMovingResponse() {
+func (m *mockVehicle) disableIsMovingResponse() {
 	m.mocks.mockIsMoving = false
 }
+
 /* -------------------------- Honk Mock Helpers --------------------------- */
 
 // Honk overrides the method to return the mock response
-func (m mockVehicle) Honk(times int) {
+func (m *mockVehicle) Honk(times int) {
 	if m.mocks.mockHonk {
 		m.mocks.HonkResponse(times)
 	}
@@ -206,23 +213,24 @@ func (m mockVehicle) Honk(times int) {
 }
 
 // setHonkResponse sets the response for Honk
-func (m mockVehicle) setHonkResponse(resp func(int)) {
+func (m *mockVehicle) setHonkResponse(resp func(int)) {
 	m.mocks.HonkResponse = resp
 }
 
 // enableHonkResponse turns the mock on
-func (m mockVehicle) enableHonkResponse() {
+func (m *mockVehicle) enableHonkResponse() {
 	m.mocks.mockHonk = true
 }
 
 // disableHonkResponse turns the mock off
-func (m mockVehicle) disableHonkResponse() {
+func (m *mockVehicle) disableHonkResponse() {
 	m.mocks.mockHonk = false
 }
+
 /* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
 
 // GetEngineSpecs overrides the method to return the mock response
-func (m mockVehicle) GetEngineSpecs() (int, string) {
+func (m *mockVehicle) GetEngineSpecs() (int, string) {
 	if m.mocks.mockGetEngineSpecs {
 		return m.mocks.GetEngineSpecsResponse()
 	}
@@ -230,23 +238,24 @@ func (m mockVehicle) GetEngineSpecs() (int, string) {
 }
 
 // setGetEngineSpecsResponse sets the response for GetEngineSpecs
-func (m mockVehicle) setGetEngineSpecsResponse(resp func() (int, string)) {
+func (m *mockVehicle) setGetEngineSpecsResponse(resp func() (int, string)) {
 	m.mocks.GetEngineSpecsResponse = resp
 }
 
 // enableGetEngineSpecsResponse turns the mock on
-func (m mockVehicle) enableGetEngineSpecsResponse() {
+func (m *mockVehicle) enableGetEngineSpecsResponse() {
 	m.mocks.mockGetEngineSpecs = true
 }
 
 // disableGetEngineSpecsResponse turns the mock off
-func (m mockVehicle) disableGetEngineSpecsResponse() {
+func (m *mockVehicle) disableGetEngineSpecsResponse() {
 	m.mocks.mockGetEngineSpecs = false
 }
+
 /* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
 
 // ApplyBrakes overrides the method to return the mock response
-func (m mockVehicle) ApplyBrakes(force float64) (bool) {
+func (m *mockVehicle) ApplyBrakes(force float64) bool {
 	if m.mocks.mockApplyBrakes {
 		return m.mocks.ApplyBrakesResponse(force)
 	}
@@ -254,23 +263,24 @@ func (m mockVehicle) ApplyBrakes(force float64) (bool) {
 }
 
 // setApplyBrakesResponse sets the response for ApplyBrakes
-func (m mockVehicle) setApplyBrakesResponse(resp func(float64) (bool)) {
+func (m *mockVehicle) setApplyBrakesResponse(resp func(float64) bool) {
 	m.mocks.ApplyBrakesResponse = resp
 }
 
 // enableApplyBrakesResponse turns the mock on
-func (m mockVehicle) enableApplyBrakesResponse() {
+func (m *mockVehicle) enableApplyBrakesResponse() {
 	m.mocks.mockApplyBrakes = true
 }
 
 // disableApplyBrakesResponse turns the mock off
-func (m mockVehicle) disableApplyBrakesResponse() {
+func (m *mockVehicle) disableApplyBrakesResponse() {
 	m.mocks.mockApplyBrakes = false
 }
+
 /* -------------------------- ChangeGears Mock Helpers --------------------------- */
 
 // ChangeGears overrides the method to return the mock response
-func (m mockVehicle) ChangeGears(gear int) (int, int) {
+func (m *mockVehicle) ChangeGears(gear int) (int, int) {
 	if m.mocks.mockChangeGears {
 		return m.mocks.ChangeGearsResponse(gear)
 	}
@@ -278,23 +288,24 @@ func (m mockVehicle) ChangeGears(gear int) (int, int) {
 }
 
 // setChangeGearsResponse sets the response for ChangeGears
-func (m mockVehicle) setChangeGearsResponse(resp func(int) (int, int)) {
+func (m *mockVehicle) setChangeGearsResponse(resp func(int) (int, int)) {
 	m.mocks.ChangeGearsResponse = resp
 }
 
 // enableChangeGearsResponse turns the mock on
-func (m mockVehicle) enableChangeGearsResponse() {
+func (m *mockVehicle) enableChangeGearsResponse() {
 	m.mocks.mockChangeGears = true
 }
 
 // disableChangeGearsResponse turns the mock off
-func (m mockVehicle) disableChangeGearsResponse() {
+func (m *mockVehicle) disableChangeGearsResponse() {
 	m.mocks.mockChangeGears = false
 }
+
 /* -------------------------- Telemetry Mock Helpers --------------------------- */
 
 // Telemetry overrides the method to return the mock response
-func (m mockVehicle) Telemetry() (map[string]float64) {
+func (m *mockVehicle) Telemetry() map[string]float64 {
 	if m.mocks.mockTelemetry {
 		return m.mocks.TelemetryResponse()
 	}
@@ -302,23 +313,24 @@ func (m mockVehicle) Telemetry() (map[string]float64) {
 }
 
 // setTelemetryResponse sets the response for Telemetry
-func (m mockVehicle) setTelemetryResponse(resp func() (map[string]float64)) {
+func (m *mockVehicle) setTelemetryResponse(resp func() map[string]float64) {
 	m.mocks.TelemetryResponse = resp
 }
 
 // enableTelemetryResponse turns the mock on
-func (m mockVehicle) enableTelemetryResponse() {
+func (m *mockVehicle) enableTelemetryResponse() {
 	m.mocks.mockTelemetry = true
 }
 
 // disableTelemetryResponse turns the mock off
-func (m mockVehicle) disableTelemetryResponse() {
+func (m *mockVehicle) disableTelemetryResponse() {
 	m.mocks.mockTelemetry = false
 }
+
 /* -------------------------- GetPassengers Mock Helpers --------------------------- */
 
 // GetPassengers overrides the method to return the mock response
-func (m mockVehicle) GetPassengers() ([]string) {
+func (m *mockVehicle) GetPassengers() []string {
 	if m.mocks.mockGetPassengers {
 		return m.mocks.GetPassengersResponse()
 	}
@@ -326,23 +338,24 @@ func (m mockVehicle) GetPassengers() ([]string) {
 }
 
 // setGetPassengersResponse sets the response for GetPassengers
-func (m mockVehicle) setGetPassengersResponse(resp func() ([]string)) {
+func (m *mockVehicle) setGetPassengersResponse(resp func() []string) {
 	m.mocks.GetPassengersResponse = resp
 }
 
 // enableGetPassengersResponse turns the mock on
-func (m mockVehicle) enableGetPassengersResponse() {
+func (m *mockVehicle) enableGetPassengersResponse() {
 	m.mocks.mockGetPassengers = true
 }
 
 // disableGetPassengersResponse turns the mock off
-func (m mockVehicle) disableGetPassengersResponse() {
+func (m *mockVehicle) disableGetPassengersResponse() {
 	m.mocks.mockGetPassengers = false
 }
+
 /* -------------------------- LoadCargo Mock Helpers --------------------------- */
 
 // LoadCargo overrides the method to return the mock response
-func (m mockVehicle) LoadCargo(items []string) (int, error) {
+func (m *mockVehicle) LoadCargo(items []string) (int, error) {
 	if m.mocks.mockLoadCargo {
 		return m.mocks.LoadCargoResponse(items)
 	}
@@ -350,23 +363,24 @@ func (m mockVehicle) LoadCargo(items []string) (int, error) {
 }
 
 // setLoadCargoResponse sets the response for LoadCargo
-func (m mockVehicle) setLoadCargoResponse(resp func([]string) (int, error)) {
+func (m *mockVehicle) setLoadCargoResponse(resp func([]string) (int, error)) {
 	m.mocks.LoadCargoResponse = resp
 }
 
 // enableLoadCargoResponse turns the mock on
-func (m mockVehicle) enableLoadCargoResponse() {
+func (m *mockVehicle) enableLoadCargoResponse() {
 	m.mocks.mockLoadCargo = true
 }
 
 // disableLoadCargoResponse turns the mock off
-func (m mockVehicle) disableLoadCargoResponse() {
+func (m *mockVehicle) disableLoadCargoResponse() {
 	m.mocks.mockLoadCargo = false
 }
+
 /* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
 
 // GetVehicleStatus overrides the method to return the mock response
-func (m mockVehicle) GetVehicleStatus() (VehicleStatus) {
+func (m *mockVehicle) GetVehicleStatus() vehicle.VehicleStatus {
 	if m.mocks.mockGetVehicleStatus {
 		return m.mocks.GetVehicleStatusResponse()
 	}
@@ -374,23 +388,24 @@ func (m mockVehicle) GetVehicleStatus() (VehicleStatus) {
 }
 
 // setGetVehicleStatusResponse sets the response for GetVehicleStatus
-func (m mockVehicle) setGetVehicleStatusResponse(resp func() (VehicleStatus)) {
+func (m *mockVehicle) setGetVehicleStatusResponse(resp func() vehicle.VehicleStatus) {
 	m.mocks.GetVehicleStatusResponse = resp
 }
 
 // enableGetVehicleStatusResponse turns the mock on
-func (m mockVehicle) enableGetVehicleStatusResponse() {
+func (m *mockVehicle) enableGetVehicleStatusResponse() {
 	m.mocks.mockGetVehicleStatus = true
 }
 
 // disableGetVehicleStatusResponse turns the mock off
-func (m mockVehicle) disableGetVehicleStatusResponse() {
+func (m *mockVehicle) disableGetVehicleStatusResponse() {
 	m.mocks.mockGetVehicleStatus = false
 }
+
 /* -------------------------- UpdateStatus Mock Helpers --------------------------- */
 
 // UpdateStatus overrides the method to return the mock response
-func (m mockVehicle) UpdateStatus(status VehicleStatus) (error) {
+func (m *mockVehicle) UpdateStatus(status vehicle.VehicleStatus) error {
 	if m.mocks.mockUpdateStatus {
 		return m.mocks.UpdateStatusResponse(status)
 	}
@@ -398,16 +413,16 @@ func (m mockVehicle) UpdateStatus(status VehicleStatus) (error) {
 }
 
 // setUpdateStatusResponse sets the response for UpdateStatus
-func (m mockVehicle) setUpdateStatusResponse(resp func(VehicleStatus) (error)) {
+func (m *mockVehicle) setUpdateStatusResponse(resp func(vehicle.VehicleStatus) error) {
 	m.mocks.UpdateStatusResponse = resp
 }
 
 // enableUpdateStatusResponse turns the mock on
-func (m mockVehicle) enableUpdateStatusResponse() {
+func (m *mockVehicle) enableUpdateStatusResponse() {
 	m.mocks.mockUpdateStatus = true
 }
 
 // disableUpdateStatusResponse turns the mock off
-func (m mockVehicle) disableUpdateStatusResponse() {
+func (m *mockVehicle) disableUpdateStatusResponse() {
 	m.mocks.mockUpdateStatus = false
 }

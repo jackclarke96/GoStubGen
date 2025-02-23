@@ -78,3 +78,10 @@ func getZeroVal(paramType string) string {
 
 	return "nil"
 }
+
+func prefixTypeIfCustom(typeName, pkg string, customTypes map[string]bool) string {
+	if customTypes[typeName] {
+		return pkg + "." + typeName
+	}
+	return typeName
+}

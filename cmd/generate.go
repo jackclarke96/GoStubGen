@@ -13,6 +13,7 @@ import (
 // Config structure to match the YAML file format
 type Config struct {
 	Package        string                 `yaml:"package"`
+	Importer       string                 `yaml:"importer"`
 	PackageImports []string               `yaml:"package_imports"`
 	CustomStructs  []generator.StructSpec `yaml:"custom_structs"`
 	Name           string                 `yaml:"name"`
@@ -45,7 +46,8 @@ var generateCmd = &cobra.Command{
 		}
 
 		commonSpec := generator.CommonSpec{
-			Package: config.Package,
+			Package:  config.Package,
+			Importer: config.Importer,
 		}
 
 		// Generate custom structs (excluding the one implementing the interface)
@@ -79,6 +81,25 @@ var generateCmd = &cobra.Command{
 		}
 
 		// Generate the mock implementation
+		customTypes := make(map[string]bool)
+		for _, cs := range config.CustomStructs {
+			customTypes[cs.Name] = true
+		}
+
+		// Prefix types for each custom struct field if needed.
+		for mIdx, m := range interfaceSpec.Methods {
+			for iIdx, inp := range m.Inputs {
+				if customTypes[inp.Type] {
+					interfaceSpec.Methods[mIdx].Inputs[iIdx].Type = fmt.Sprintf("%s.%s", commonSpec.Package, inp.Type)
+				}
+			}
+			for oIdx, out := range m.Outputs {
+				if customTypes[out.Type] {
+					interfaceSpec.Methods[mIdx].Outputs[oIdx].Type = fmt.Sprintf("%s.%s", commonSpec.Package, out.Type)
+				}
+			}
+		}
+
 		if err := generator.GenerateMock(interfaceSpec, structSpec, commonSpec); err != nil {
 			log.Fatalf("Error generating mock: %v", err)
 		}

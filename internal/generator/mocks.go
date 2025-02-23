@@ -8,7 +8,7 @@ import (
 )
 
 func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
-	const mockTemplate = `package {{ .Package }}
+	const mockTemplate = `package {{ .Importer }}
 
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
@@ -21,14 +21,14 @@ type {{ .MockConfigName }} struct {
 
 // {{ .MockName }} embeds {{ .Concrete }} and its mocks
 type {{ .MockName }} struct {
-	{{ .ConcreteVar }}   {{ .Concrete }}
+	{{ .ConcreteVar }}   {{ .Package }}.{{ .Concrete }}
 	mocks {{ .MockConfigName }}
 }
 
 // {{ .MockFactory }} returns a new mock
-func {{ .MockFactory }}() {{ .Interface }} {
-	{{ .ConcreteVar }} := New{{ .Concrete }}()
-	return {{ .MockName }}{
+func {{ .MockFactory }}()  * {{ .MockName }} {
+	{{ .ConcreteVar }} := {{ .Package }}.New{{ .Concrete }}()
+	return &{{ .MockName }}{
 		{{ .ConcreteVar }}:   *{{ .ConcreteVar }},
 		mocks: {{ .MockConfigName }}{},
 	}
@@ -38,7 +38,7 @@ func {{ .MockFactory }}() {{ .Interface }} {
 /* -------------------------- {{ .Name }} Mock Helpers --------------------------- */
 
 // {{ .Name }} overrides the method to return the mock response
-func (m {{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
+func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
 	if m.mocks.mock{{ title .Name }} {
 		{{- if gt (len .Outputs) 0 }}
 		return m.mocks.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
@@ -54,28 +54,28 @@ func (m {{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if
 }
 
 // set{{ title .Name }}Response sets the response for {{ .Name }}
-func (m {{ $.MockName }}) set{{ title .Name }}Response(resp func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
+func (m *{{ $.MockName }}) set{{ title .Name }}Response(resp func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
 	m.mocks.{{ .Name }}Response = resp
 }
 
 // enable{{ title .Name }}Response turns the mock on
-func (m {{ $.MockName }}) enable{{ title .Name }}Response() {
+func (m *{{ $.MockName }}) enable{{ title .Name }}Response() {
 	m.mocks.mock{{ title .Name }} = true
 }
 
 // disable{{ title .Name }}Response turns the mock off
-func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
+func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
 	m.mocks.mock{{ title .Name }} = false
 }
 {{- end }}
 `
 
 	// Ensure "generated/" directory exists
-	if err := os.MkdirAll("generated", os.ModePerm); err != nil {
+	if err := os.MkdirAll("generated/importer", os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	filePath := fmt.Sprintf("generated/%s_mock.go", strings.ToLower(structSpec.Name))
+	filePath := fmt.Sprintf("generated/importer/%s_mock_test.go", strings.ToLower(spec.Name))
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -107,6 +107,7 @@ func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
 		MockFactory    string
 		Methods        []Method
 		Package        string
+		Importer       string
 	}{
 		Interface:      spec.Name,
 		Concrete:       structSpec.Name,
@@ -116,5 +117,6 @@ func (m {{ $.MockName }}) disable{{ title .Name }}Response() {
 		MockFactory:    fmt.Sprintf("%sMock", strings.ToLower(spec.Name)),
 		Methods:        spec.Methods,
 		Package:        common.Package,
+		Importer:       common.Importer,
 	})
 }
