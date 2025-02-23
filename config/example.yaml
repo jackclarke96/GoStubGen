@@ -34,12 +34,12 @@ custom_structs:
 name: Vehicle
 concrete: Car
 methods:
-  - name: getTopSpeed
+  - name: GetTopSpeed
     inputs: []
     outputs:
       - type: int
 
-  - name: turn
+  - name: Turn
     inputs:
       - name: dir
         type: string
@@ -47,13 +47,13 @@ methods:
       - name: newDir
         type: string
 
-  - name: reverse
+  - name: Reverse
     inputs: []
     outputs:
       - type: string
       - type: error
 
-  - name: accelerate
+  - name: Accelerate
     inputs:
       - name: speed
         type: int
@@ -65,18 +65,18 @@ methods:
       - name: err
         type: error
 
-  - name: isMoving
+  - name: IsMoving
     inputs: []
     outputs:
       - type: bool
 
-  - name: honk
+  - name: Honk
     inputs:
       - name: times
         type: int
     outputs: []
 
-  - name: getEngineSpecs
+  - name: GetEngineSpecs
     inputs: []
     outputs:
       - name: power
@@ -84,14 +84,14 @@ methods:
       - name: fuelType
         type: string
 
-  - name: applyBrakes
+  - name: ApplyBrakes
     inputs:
       - name: force
         type: float64
     outputs:
       - type: bool
 
-  - name: changeGears
+  - name: ChangeGears
     inputs:
       - name: gear
         type: int
@@ -101,17 +101,17 @@ methods:
       - name: newGear
         type: int
 
-  - name: telemetry
+  - name: Telemetry
     inputs: []
     outputs:
       - type: "map[string]float64"
 
-  - name: getPassengers
+  - name: GetPassengers
     inputs: []
     outputs:
       - type: "[]string"
 
-  - name: loadCargo
+  - name: LoadCargo
     inputs:
       - name: items
         type: "[]string"
@@ -121,12 +121,12 @@ methods:
       - name: err
         type: error
 
-  - name: getVehicleStatus
+  - name: GetVehicleStatus
     inputs: []
     outputs:
       - type: VehicleStatus
 
-  - name: updateStatus
+  - name: UpdateStatus
     inputs:
       - name: status
         type: VehicleStatus
