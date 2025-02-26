@@ -19,18 +19,17 @@ type {{ .MockConfigName }} struct {
 {{ end }}
 }
 
-// {{ .MockName }} embeds {{ .Concrete }} and its mocks
+// {{ .MockName }} embeds a concrete {{ .Interface }} and its mocks
 type {{ .MockName }} struct {
-	{{ .ConcreteVar }}   {{ .Package }}.{{ .Concrete }}
-	mocks {{ .MockConfigName }}
+	real   {{ .Package }}.{{ .Interface }}
+	mocked {{ .MockConfigName }}
 }
 
 // {{ .MockFactory }} returns a new mock
-func {{ .MockFactory }}()  * {{ .MockName }} {
-	{{ .ConcreteVar }} := {{ .Package }}.New{{ .Concrete }}()
+func {{ .MockFactory }}(v {{ .Package }}.{{ .Interface }}) *{{ .MockName }} {
 	return &{{ .MockName }}{
-		{{ .ConcreteVar }}:   *{{ .ConcreteVar }},
-		mocks: {{ .MockConfigName }}{},
+		real:   v,
+		mocked: {{ .MockConfigName }}{},
 	}
 }
 
@@ -39,33 +38,33 @@ func {{ .MockFactory }}()  * {{ .MockName }} {
 
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
-	if m.mocks.mock{{ title .Name }} {
+	if m.mocked.mock{{ title .Name }} {
 		{{- if gt (len .Outputs) 0 }}
-		return m.mocks.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		return m.mocked.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 		{{- else }}
-		m.mocks.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		m.mocked.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 		{{- end }}
 	}
 	{{- if gt (len .Outputs) 0 }}
-	return m.{{ $.ConcreteVar }}.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+	return m.real.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 	{{- else }}
-	m.{{ $.ConcreteVar }}.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+	m.real.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 	{{- end }}
 }
 
 // set{{ title .Name }}Response sets the response for {{ .Name }}
 func (m *{{ $.MockName }}) set{{ title .Name }}Response(resp func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
-	m.mocks.{{ .Name }}Response = resp
+	m.mocked.{{ .Name }}Response = resp
 }
 
 // enable{{ title .Name }}Response turns the mock on
 func (m *{{ $.MockName }}) enable{{ title .Name }}Response() {
-	m.mocks.mock{{ title .Name }} = true
+	m.mocked.mock{{ title .Name }} = true
 }
 
 // disable{{ title .Name }}Response turns the mock off
 func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
-	m.mocks.mock{{ title .Name }} = false
+	m.mocked.mock{{ title .Name }} = false
 }
 {{- end }}
 `
@@ -82,12 +81,6 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
 	}
 	defer file.Close()
 
-	// Compute a variable name for the concrete type by lower-casing the first letter.
-	concreteVar := ""
-	if len(structSpec.Name) > 0 {
-		concreteVar = strings.ToLower(string(structSpec.Name[0])) + structSpec.Name[1:]
-	}
-
 	tmpl, err := template.New("mock").Funcs(template.FuncMap{
 		"title": func(s string) string {
 			return strings.Title(s)
@@ -101,7 +94,6 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
 	return tmpl.Execute(file, struct {
 		Interface      string
 		Concrete       string
-		ConcreteVar    string
 		MockName       string
 		MockConfigName string
 		MockFactory    string
@@ -111,7 +103,6 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
 	}{
 		Interface:      spec.Name,
 		Concrete:       structSpec.Name,
-		ConcreteVar:    concreteVar,
 		MockName:       fmt.Sprintf("mock%s", spec.Name),
 		MockConfigName: fmt.Sprintf("mock%sConfig", spec.Name),
 		MockFactory:    fmt.Sprintf("%sMock", strings.ToLower(spec.Name)),

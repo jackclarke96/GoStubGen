@@ -3,12 +3,14 @@ package driver
 import (
 	"errors"
 	"testing"
+
+	"github.com/jackclarke/GoStubGen/templates/vehicle"
 )
 
 func TestDriverDriveWithMock(t *testing.T) {
 
 	// Create a new mock vehicle.
-	mockVeh := vehicleMock()
+	mockVeh := vehicleMock(vehicle.NewCar())
 
 	// Inject the mock vehicle into the Driver.
 	d := NewDriver(WithVehicle(mockVeh))
