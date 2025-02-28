@@ -26,13 +26,13 @@ func GenerateStructs(structs []StructSpec, common CommonSpec) error {
 	}
 
 	// Define the template without the package line.
-	const structTemplate = `// {{ .Struct.Name }} is a user-defined struct
+	const structTemplate = `// {{ .Struct.Description }}
 type {{ .Struct.Name }} struct {
 {{- range .Struct.Fields }}
+	{{ if .Description }}// {{ .Description }} {{- end }}
     {{ .Name }} {{ .Type }}
 {{- end }}
 }
-
 `
 
 	tmpl, err := template.New("struct").Parse(structTemplate)

@@ -8,15 +8,17 @@ importer: driver
 
 implementers:
   - name: Car
-    description: "An example struct"
+    description: "A struct that will act as a concrete type for the interface"
     fields:
       - name: doors
+        description: "number of doors on vehicle"
         type: int
       - name: insured
+        description: "Whether the vehicle is insured"
         type: bool
         
   - name: Bike
-    description: "An example struct"
+    description: "Another struct that will act as a concrete type for the interface"
     fields:
       - name: kind
         description: "the type of bike e.g. BMX"
@@ -24,62 +26,67 @@ implementers:
 
 custom_structs:
   - name: VehicleStatus
-    description: "A second example struct"
+    description: "An example struct"
     fields:
       - name: Speed
+        description: "The speed at which the vehicle is currently travelling"
         type: int
-        description: "The speed at which the car is currently travelling"
       - name: Direction
+        description: "The direction in which the vehicle is currently travelling"
         type: string
       - name: EngineOn
+        description: "Boolean indicating whether an engine is turned on"
         type: bool
 
 name: Vehicle
 methods:
   - name: GetTopSpeed
-    description: "bla bla bla"
+    description: "Returns top speed of vehicle"
     inputs: []
     outputs:
       - type: int
 
   - name: Turn
+    description: "Turns the vehicle"
     inputs:
       - name: dir
         type: string
     outputs:
-      - name: newDir
-        type: string
+      - type: string
 
   - name: Reverse
+    description: "Reverse the vehicle"
     inputs: []
     outputs:
       - type: string
       - type: error
 
   - name: Accelerate
+    description: "Increase speed in curent direction"
     inputs:
       - name: speed
         type: int
       - name: unit
         type: string
     outputs:
-      - name: newSpeed
-        type: int
-      - name: err
-        type: error
+      - type: int
+      - type: error
 
   - name: IsMoving
+    description: "Returns boolean indicating whether vehicle is currently moving"
     inputs: []
     outputs:
       - type: bool
 
   - name: Honk
+    description: "Honks the provided number of times"
     inputs:
       - name: times
         type: int
     outputs: []
 
   - name: GetEngineSpecs
+    description: "Returns data about the engine specs"
     inputs: []
     outputs:
       - name: power
@@ -88,6 +95,7 @@ methods:
         type: string
 
   - name: ApplyBrakes
+    description: "slows down the vehicle"
     inputs:
       - name: force
         type: float64
@@ -95,41 +103,43 @@ methods:
       - type: bool
 
   - name: ChangeGears
+    description: "change gears"
     inputs:
       - name: gear
         type: int
     outputs:
-      - name: prevGear
-        type: int
-      - name: newGear
-        type: int
+      - type: int
+      - type: int
 
   - name: Telemetry
+    description: "get telemetry data in a map"
     inputs: []
     outputs:
       - type: "map[string]float64"
 
   - name: GetPassengers
+    description: "returns names of passengers currently in/on vehicle"
     inputs: []
     outputs:
       - type: "[]string"
 
   - name: LoadCargo
+    description: "Loads cargo onto vehicle. Returns remaining capacity of vehicle or error otherwise."
     inputs:
       - name: items
         type: "[]string"
     outputs:
-      - name: remainingCapacity
-        type: int
-      - name: err
-        type: error
+      - type: int
+      - type: error
 
   - name: GetVehicleStatus
+    description: "Returns current status of vehicle."
     inputs: []
     outputs:
       - type: VehicleStatus
 
   - name: UpdateStatus
+    description: "Updates current status of vehicle."
     inputs:
       - name: status
         type: VehicleStatus

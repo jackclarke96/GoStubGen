@@ -11,14 +11,14 @@ import (
 func GenerateConcreteTypes(spec InterfaceSpec, implementers []StructSpec, common CommonSpec) error {
 	const structTemplate = `package {{ .Common.Package }}
 
-// {{ .Struct.Name }} is the concrete implementation of {{ .Interface.Name }}
+{{ if .Struct.Description }}// {{ .Struct.Description }} {{ end }}
 type {{ .Struct.Name }} struct {
 {{- range .Struct.Fields }}
     {{ .Name }} {{ .Type }}
 {{- end }}
 }
 
-// New{{ .Struct.Name }} creates a new instance of {{ .Struct.Name }} with default values
+// New {{ .Struct.Name }} creates a new instance of {{ .Struct.Name }} with default values
 func New{{ .Struct.Name }}() *{{ .Struct.Name }} {
 	return &{{ .Struct.Name }}{
 		{{- range .Struct.Fields }}
@@ -28,8 +28,8 @@ func New{{ .Struct.Name }}() *{{ .Struct.Name }} {
 }
 
 {{ range .Interface.Methods }}
+{{- if .Description }}// {{ .Description }} {{- end }}
 func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}) ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}) {
-	// TODO: Implement
 	{{- if gt (len .Outputs) 0 }}
 	return {{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ getDefaultReturnValue .Type }}{{ end }}
 	{{- end }}

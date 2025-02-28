@@ -13,9 +13,9 @@ func GenerateInterface(spec InterfaceSpec, common CommonSpec) error {
 // {{ .Interface.Name }} defines the interface
 type {{ .Interface.Name }} interface {
 {{- range .Interface.Methods }}
-	// {{ .Description }}
+	{{ if .Description }}// {{ .Description }} {{- end }}
 	{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}) ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }})
-{{ end }}
+{{- end }}
 }
 `
 
