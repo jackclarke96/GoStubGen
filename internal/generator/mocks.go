@@ -52,18 +52,27 @@ func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ i
 	{{- end }}
 }
 
-// set{{ title .Name }}Response sets the response for {{ .Name }}
-func (m *{{ $.MockName }}) set{{ title .Name }}Response(resp func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
-	m.mocked.{{ .Name }}Response = resp
+// set{{ title .Name }}Func sets the function for {{ .Name }}
+func (m *{{ $.MockName }}) set{{ title .Name }}Func(f func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
+	m.mocked.{{ .Name }}Response = f
 }
 
-// enable{{ title .Name }}Response turns the mock on
-func (m *{{ $.MockName }}) enable{{ title .Name }}Response() {
+{{ if gt (len .Outputs) 0 }}
+// set{{ title .Name }}Response sets the response for {{ .Name }}
+func (m *{{ $.MockName }}) set{{ title .Name }}Response{{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}output{{ $index }} {{ $param.Type }}{{ end }}){{ end }} {
+	m.set{{ .Name }}Func(func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
+		return {{ if gt (len .Outputs) 0 }}{{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}output{{ $index }}{{ end }}{{ end }}
+	})
+}
+{{ end }}
+
+// enable{{ title .Name }}Mock turns the mock on
+func (m *{{ $.MockName }}) enable{{ title .Name }}Mock() {
 	m.mocked.mock{{ title .Name }} = true
 }
 
-// disable{{ title .Name }}Response turns the mock off
-func (m *{{ $.MockName }}) disable{{ title .Name }}Response() {
+// disable{{ title .Name }}Mock turns the mock off
+func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 	m.mocked.mock{{ title .Name }} = false
 }
 {{- end }}

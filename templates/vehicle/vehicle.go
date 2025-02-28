@@ -1,6 +1,7 @@
 package vehicle
 
-// Vehicle defines the interface
+// Vehicle defines the interface.
+// TODO ability to add comments
 type Vehicle interface {
 	GetTopSpeed() int
 	Turn(dir string) string
