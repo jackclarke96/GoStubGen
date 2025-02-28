@@ -6,36 +6,38 @@ package_imports:
 package: vehicle
 importer: driver
 
-custom_structs:
+implementers:
   - name: Car
+    description: "An example struct"
     fields:
       - name: doors
         type: int
       - name: insured
         type: bool
+        
+  - name: Bike
+    description: "An example struct"
+    fields:
+      - name: kind
+        description: "the type of bike e.g. BMX"
+        type: string
 
+custom_structs:
   - name: VehicleStatus
+    description: "A second example struct"
     fields:
       - name: Speed
         type: int
+        description: "The speed at which the car is currently travelling"
       - name: Direction
         type: string
       - name: EngineOn
         type: bool
 
-  - name: VehicleStatus2
-    fields:
-      - name: Speed
-        type: int
-      - name: Direction
-        type: string
-      - name: EngineOn
-        type: bool
-# Moved interface details to the root level
 name: Vehicle
-concrete: Car
 methods:
   - name: GetTopSpeed
+    description: "bla bla bla"
     inputs: []
     outputs:
       - type: int

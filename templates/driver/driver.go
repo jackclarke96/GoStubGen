@@ -12,10 +12,10 @@ type Driver struct {
 
 type Option func(*Driver)
 
-// WithVehicle injects a vehicle into the Driver. TODO probably use init here.
+// WithVehicle injects a vehicle into the Driver. Pass an initialised vehicle here
 func WithVehicle(v vehicle.Vehicle) Option {
 	return func(c *Driver) {
-		c.vehicle = v //.init()
+		c.vehicle = v
 	}
 }
 
@@ -33,12 +33,12 @@ func NewDriver(opts ...Option) *Driver {
 	return d
 }
 
+// basic driver method to enable test of mocking
 func (d *Driver) drive() error {
 	cargo, err := d.vehicle.LoadCargo([]string{"clothes", "toiletries", "electronics"})
-
 	if err != nil {
 		return fmt.Errorf("drive: failed to load cargo! %w", err)
 	}
-	fmt.Printf("Cargo retrieved! %+v", cargo)
+	fmt.Printf("%+v pieces of cargo retrieved!", cargo)
 	return nil
 }

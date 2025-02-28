@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Long: `GoStubGen generates interfaces, structs, and test frameworks 
 	based on a provided YAML configuration file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Run 'GoStubGen generate -c <config.json>' to generate code.")
+		fmt.Println("Run 'GoStubGen generate -c <config.yaml>' to generate code.")
 	},
 }
 

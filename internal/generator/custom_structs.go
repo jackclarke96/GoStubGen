@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-func GenerateStructs(structs []StructSpec, common CommonSpec, concreteType string) error {
+func GenerateStructs(structs []StructSpec, common CommonSpec) error {
 	// Create the file once and write the package declaration first.
 	filePath := "generated/imported/custom_types.go"
 	// Ensure the "generated/" directory exists
@@ -42,11 +42,6 @@ type {{ .Struct.Name }} struct {
 
 	// Loop through the structs and write each one to the file.
 	for _, structDef := range structs {
-		// Skip the struct that implements the interface (e.g., "Car")
-		if structDef.Name == concreteType {
-			continue
-		}
-
 		combinedTemplate := struct {
 			Struct StructSpec
 			Common CommonSpec

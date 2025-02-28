@@ -16,9 +16,9 @@ type Config struct {
 	Importer       string                 `yaml:"importer"`
 	PackageImports []string               `yaml:"package_imports"`
 	CustomStructs  []generator.StructSpec `yaml:"custom_structs"`
+	Implementers   []generator.StructSpec `yaml:"implementers"`
 	Name           string                 `yaml:"name"`
 	Methods        []generator.Method     `yaml:"methods"`
-	Concrete       string                 `yaml:"concrete"`
 }
 
 var configPath string
@@ -38,11 +38,9 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Invalid YAML format: %v", err)
 		}
 
-		// Generate the interface
 		interfaceSpec := generator.InterfaceSpec{
-			Name:     config.Name,
-			Methods:  config.Methods,
-			Concrete: config.Concrete,
+			Name:    config.Name,
+			Methods: config.Methods,
 		}
 
 		commonSpec := generator.CommonSpec{
@@ -50,8 +48,8 @@ var generateCmd = &cobra.Command{
 			Importer: config.Importer,
 		}
 
-		// Generate custom structs (excluding the one implementing the interface)
-		if err := generator.GenerateStructs(config.CustomStructs, commonSpec, config.Concrete); err != nil {
+		// Generate custom structs (excluding the ones implementing the interface)
+		if err := generator.GenerateStructs(config.CustomStructs, commonSpec); err != nil {
 			log.Fatalf("Error generating custom structs: %v", err)
 		}
 
@@ -60,47 +58,14 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Error generating interface: %v", err)
 		}
 
-		// Find the struct that matches the concrete implementation (Car)
-		var structSpec generator.StructSpec
-		found := false
-		for _, s := range config.CustomStructs {
-			if s.Name == config.Concrete {
-				structSpec = s
-				found = true
-				break
-			}
+		// Generate concrete types structs
+		if err := generator.GenerateConcreteTypes(interfaceSpec, config.Implementers, commonSpec); err != nil {
+			log.Fatalf("Error generating custom structs: %v", err)
 		}
 
-		if !found {
-			log.Fatalf("Error: No struct definition found for concrete type '%s'", config.Concrete)
-		}
-
-		// Generate the struct and methods together in one file
-		if err := generator.GenerateConcreteType(interfaceSpec, structSpec, commonSpec); err != nil {
-			log.Fatalf("Error generating struct: %v", err)
-		}
-
-		// Generate the mock implementation
-		customTypes := make(map[string]bool)
-		for _, cs := range config.CustomStructs {
-			customTypes[cs.Name] = true
-		}
-
-		// Prefix types for each custom struct field if needed.
-		for mIdx, m := range interfaceSpec.Methods {
-			for iIdx, inp := range m.Inputs {
-				if customTypes[inp.Type] {
-					interfaceSpec.Methods[mIdx].Inputs[iIdx].Type = fmt.Sprintf("%s.%s", commonSpec.Package, inp.Type)
-				}
-			}
-			for oIdx, out := range m.Outputs {
-				if customTypes[out.Type] {
-					interfaceSpec.Methods[mIdx].Outputs[oIdx].Type = fmt.Sprintf("%s.%s", commonSpec.Package, out.Type)
-				}
-			}
-		}
-
-		if err := generator.GenerateMock(interfaceSpec, structSpec, commonSpec); err != nil {
+		// Generate the mocks
+		mockInterfaceSpec := prefixTypesWithPackageName(config, interfaceSpec, commonSpec.Package)
+		if err := generator.GenerateMock(mockInterfaceSpec, generator.StructSpec{}, commonSpec); err != nil {
 			log.Fatalf("Error generating mock: %v", err)
 		}
 
@@ -112,4 +77,28 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to YAML config file")
 	generateCmd.MarkFlagRequired("config")
+}
+
+func prefixTypesWithPackageName(config Config, spec generator.InterfaceSpec, packageName string) generator.InterfaceSpec {
+	// Generate the mock implementation
+	customTypes := make(map[string]bool)
+	for _, cs := range config.CustomStructs {
+		customTypes[cs.Name] = true
+	}
+
+	// Prefix types with package name so that they are suitable for import into external package when added to mocks.
+	for mIdx, m := range spec.Methods {
+		for iIdx, inp := range m.Inputs {
+			if customTypes[inp.Type] {
+				spec.Methods[mIdx].Inputs[iIdx].Type = fmt.Sprintf("%s.%s", packageName, inp.Type)
+			}
+		}
+		for oIdx, out := range m.Outputs {
+			if customTypes[out.Type] {
+				spec.Methods[mIdx].Outputs[oIdx].Type = fmt.Sprintf("%s.%s", packageName, out.Type)
+			}
+		}
+	}
+	return spec
+
 }

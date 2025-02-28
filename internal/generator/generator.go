@@ -7,16 +7,16 @@ type CommonSpec struct {
 
 // InterfaceSpec represents an interface definition
 type InterfaceSpec struct {
-	Name     string   `yaml:"name"`
-	Methods  []Method `yaml:"methods"`
-	Concrete string   `yaml:"concrete"`
+	Name    string   `yaml:"name"`
+	Methods []Method `yaml:"methods"`
 }
 
 // Method represents a method signature
 type Method struct {
-	Name    string  `yaml:"name"`
-	Inputs  []Param `yaml:"inputs"`
-	Outputs []Param `yaml:"outputs"`
+	Name        string  `yaml:"name"`
+	Inputs      []Param `yaml:"inputs"`
+	Outputs     []Param `yaml:"outputs"`
+	Description string  `yaml:"description"`
 }
 
 // Param represents a function parameter (input or output)
@@ -27,6 +27,7 @@ type Param struct {
 
 // StructSpec represents a custom struct definition
 type StructSpec struct {
-	Name   string  `yaml:"name"`
-	Fields []Param `yaml:"fields"`
+	Name        string  `yaml:"name"`
+	Fields      []Param `yaml:"fields"`
+	Description string  `yaml:"description"`
 }

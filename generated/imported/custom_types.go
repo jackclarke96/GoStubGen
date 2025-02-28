@@ -7,10 +7,3 @@ type VehicleStatus struct {
     EngineOn bool
 }
 
-// VehicleStatus2 is a user-defined struct
-type VehicleStatus2 struct {
-    Speed int
-    Direction string
-    EngineOn bool
-}
-
