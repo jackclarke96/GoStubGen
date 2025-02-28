@@ -8,9 +8,9 @@ import (
 
 func GenerateStructs(structs []StructSpec, common CommonSpec) error {
 	// Create the file once and write the package declaration first.
-	filePath := "generated/imported/custom_types.go"
+	filePath := fmt.Sprintf("generated/%s/custom_types.go", common.Package)
 	// Ensure the "generated/" directory exists
-	if err := os.MkdirAll("generated/imported", os.ModePerm); err != nil {
+	if err := os.MkdirAll(fmt.Sprintf("generated/%s", common.Package), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 

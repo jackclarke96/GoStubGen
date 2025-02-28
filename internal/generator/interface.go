@@ -24,11 +24,11 @@ type {{ .Interface.Name }} interface {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 	// Ensure "generated/" directory exists
-	if err := os.MkdirAll("generated/imported", os.ModePerm); err != nil {
+	if err := os.MkdirAll(fmt.Sprintf("generated/%s", common.Package), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
 
-	file, err := os.Create(fmt.Sprintf("generated/imported/%s.go", strings.ToLower(spec.Name)))
+	file, err := os.Create(fmt.Sprintf("generated/%s/%s.go", common.Package, strings.ToLower(spec.Name)))
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}

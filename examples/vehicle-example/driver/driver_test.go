@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jackclarke/GoStubGen/templates/vehicle"
+	"github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
 )
 
 func TestDriverDriveWithMock(t *testing.T) {

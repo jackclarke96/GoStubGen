@@ -10,6 +10,8 @@ import (
 func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
 	const mockTemplate = `package {{ .Importer }}
 
+	import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
+
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
 {{ range .Methods }}
@@ -79,6 +81,7 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 `
 
 	// Ensure "generated/" directory exists
+	// TODO change to use package name
 	if err := os.MkdirAll("generated/importer", os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}

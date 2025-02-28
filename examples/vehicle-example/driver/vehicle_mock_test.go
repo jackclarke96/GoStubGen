@@ -1,6 +1,6 @@
 package driver
 
-import "github.com/jackclarke/GoStubGen/templates/vehicle"
+import "github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
 
 // mockVehicleConfig stores mock flags and responses
 type mockVehicleConfig struct {
