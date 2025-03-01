@@ -12,7 +12,7 @@ Designed for integration into a parent package using the dependency injection pa
 
 ## Features
 - **Automatic interface and struct generation** based on YAML configuration
-- **Mocking framework generation** based on YAML configuration
+- **Mocking framework generation** for unit testing
 - **Dependency injection support** for flexible runtime behavior
 
 ## Installation
@@ -69,39 +69,39 @@ Run the following command to generate Go code from a YAML specification:
 go run main.go generate -c <path-to-yaml>
 ```
 
-This will add 
-
-### Example YAML Configuration
-
-A sample YAML file defining a `Vehicle` interface is available in `/config/example.yaml`. 
-
-Running:
+For example, using:
 
 ```sh
-go run main.go generate -c config/example.yaml
+go run main.go generate -c /examples/vehicle-example/example.yaml
 ```
 
-will generate 
+will generate the following files:
 
-- `imported/vehicle.go`: The interface definition
-- `imported/car.go`: Concrete type implementation for Car
-- `imported/bike.go`: Concrete type implementation for Bike
-- `imported/custom_types.go`: Dependency injection setup
-- `importer/mocks.go`: Mock implementation for unit testing
+- **`vehicle/vehicle.go`** – Defines the `Vehicle` interface.
+- **`vehicle/car.go`** – Implements `Vehicle` for a `Car` type.
+- **`vehicle/bike.go`** – Implements `Vehicle` for a `Bike` type.
+- **`vehicle/custom_types.go`** – Provides dependency injection setup.
+- **`importer/vehicle_mock_test.go`** – Generates a mock implementation for unit testing.
 
-#### Example: Using Dependency Injection
+These files allow for easy integration into a larger Go project with dependency injection support.
 
-In `/templates` folder is...
+## Example: Using Dependency Injection
 
-You can inject a `Vehicle` implementation into the `Driver` struct:
+In `examples/vehicle-example` is a package built using the dependency injection method encouraged by this pakage. You can inject a `Vehicle` implementation into the `Driver` struct:
 
 ```go
-import "github.com/jackclarke/GoStubGen/templates/vehicle"
-import "github.com/jackclarke/GoStubGen/templates/driver"
+import (
+    "github.com/jackclarke/GoStubGen/templates/vehicle"
+    "github.com/jackclarke/GoStubGen/templates/driver"
+    "fmt"
+)
 
 func main() {
+    // Create car: a concrete implementation of Vehicle
     car := vehicle.NewCar()
+    // Inject car into driver package
     d := driver.NewDriver(driver.WithVehicle(car))
+    // Invoke Drive method which uses Vehicle methods
     err := d.Drive()
     if err != nil {
         fmt.Println("Error driving:", err)
@@ -109,19 +109,38 @@ func main() {
 }
 ```
 
-#### Using the Mocking Framework
+This enables seamless swapping of implementations for testing and production.
+
+## Using the Mocking Framework
+
+GoStubGen provides a built-in mocking system that allows you to override methods dynamically.  
+
+The generated mock struct offers the following methods:
+
+| Method                    | Description |
+|---------------------------|-------------|
+| `enable<MethodName>Mock()`  | Enables the mock for the method. |
+| `disable<MethodName>Mock()` | Restores original functionality. |
+| `set<MethodName>Response(...)` | Defines a static response for the mock. |
+| `set<MethodName>Func(func(...) ...)` | Allows complete method override. |
+
+### Mocking Example
+
+This example shows how to mock a method in a test:
 
 ```go
 import (
     "errors"
     "testing"
     "github.com/jackclarke/GoStubGen/templates/vehicle"
-    "github.com/jackclarke/GoStubGen/templates/driver"
 )
 
 func TestDriverDriveWithMock(t *testing.T) {
+    // Create a mock of a Car (which implements Vehicle)
     mockVeh := vehicleMock(vehicle.NewCar())
+    // inject mock Vehicle into driver
     d := driver.NewDriver(driver.WithVehicle(mockVeh))
+    // Mock the LoadCargo method to return an error
     mockVeh.enableLoadCargoMock()
     mockVeh.setLoadCargoResponse(0, errors.New("mock error!"))
 
@@ -130,4 +149,20 @@ func TestDriverDriveWithMock(t *testing.T) {
         t.Fatal("Expected an error but got none")
     }
 }
+```
+
+Before mocking:
+```go
+car := vehicle.NewCar()
+car.LoadCargo(10)  // Works as expected
+```
+
+After mocking:
+```go
+mockVeh := vehicleMock(vehicle.NewCar())
+mockVeh.enableLoadCargoMock()
+mockVeh.setLoadCargoResponse(0, errors.New("mock error!"))
+
+err := mockVeh.LoadCargo(10)  // Always returns an error
+fmt.Println(err)  // Output: "mock error!"
 ```
