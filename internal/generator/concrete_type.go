@@ -37,7 +37,6 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 {{ end }}
 `
 
-	// Ensure "generated/" directory exists
 	if err := os.MkdirAll(fmt.Sprintf("generated/%s", common.Package), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
@@ -57,7 +56,6 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 			return fmt.Errorf("failed to parse template: %w", err)
 		}
 
-		// Execute template with combined struct and interface data
 		err = tmpl.Execute(file, struct {
 			Interface InterfaceSpec
 			Struct    StructSpec

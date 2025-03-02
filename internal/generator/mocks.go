@@ -80,8 +80,6 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 {{- end }}
 `
 
-	// Ensure "generated/" directory exists
-	// TODO change to use package name
 	if err := os.MkdirAll("generated/importer", os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
@@ -102,7 +100,6 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	// Execute template with mock struct details, including the dynamic concrete variable.
 	return tmpl.Execute(file, struct {
 		Interface      string
 		Concrete       string

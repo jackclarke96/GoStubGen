@@ -23,7 +23,6 @@ type {{ .Interface.Name }} interface {
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
-	// Ensure "generated/" directory exists
 	if err := os.MkdirAll(fmt.Sprintf("generated/%s", common.Package), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
@@ -35,7 +34,6 @@ type {{ .Interface.Name }} interface {
 
 	defer file.Close()
 
-	// Execute template with combined struct and interface data
 	return tmpl.Execute(file, struct {
 		Interface InterfaceSpec
 		Common    CommonSpec

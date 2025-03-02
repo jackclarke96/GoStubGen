@@ -54,7 +54,7 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Error generating custom structs: %v", err)
 		}
 
-		// generate the interface
+		// Generate the interface
 		if err := generator.GenerateInterface(interfaceSpec, commonSpec); err != nil {
 			log.Fatalf("Error generating interface: %v", err)
 		}

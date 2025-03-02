@@ -71,7 +71,7 @@ func getZeroVal(paramType string) string {
 		return "nil"
 	}
 
-	// Fallback: assume custom types, structs, etc. can be initialized via a composite literal.
+	// Fallback: assume custom types, structs, etc. can be initialised via a composite literal.
 	if paramType != "" {
 		return fmt.Sprintf("%s{}", paramType)
 	}
