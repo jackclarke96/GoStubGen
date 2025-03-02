@@ -6,10 +6,9 @@ import (
 	"text/template"
 )
 
-func GenerateStructs(structs []StructSpec, common CommonSpec) error {
+func GenerateTypesAndStructs(structs []StructSpec, types []CustomTypesSpec, common CommonSpec) error {
 	// Create the file once and write the package declaration first.
 	filePath := fmt.Sprintf("generated/%s/custom_types.go", common.Package)
-	// Ensure the "generated/" directory exists
 	if err := os.MkdirAll(fmt.Sprintf("generated/%s", common.Package), os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
@@ -20,12 +19,11 @@ func GenerateStructs(structs []StructSpec, common CommonSpec) error {
 	}
 	defer file.Close()
 
-	// Write the package declaration only once.
 	if _, err := file.WriteString(fmt.Sprintf("package %s\n\n", common.Package)); err != nil {
 		return fmt.Errorf("failed to write package declaration: %w", err)
 	}
 
-	// Define the template without the package line.
+	// Define struct and custom type templates
 	const structTemplate = `// {{ .Struct.Description }}
 type {{ .Struct.Name }} struct {
 {{- range .Struct.Fields }}
@@ -34,15 +32,36 @@ type {{ .Struct.Name }} struct {
 {{- end }}
 }
 `
+	const typeTemplate = `// {{ .Type.Description }}
+type {{ .Type.Name }} {{ .Type.Definition }}
 
-	tmpl, err := template.New("struct").Parse(structTemplate)
+`
+
+	tmplStruct, err := template.New("struct").Parse(structTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
+		return fmt.Errorf("failed to parse struct template: %w", err)
 	}
 
-	// Loop through the structs and write each one to the file.
+	tmplType, err := template.New("type").Parse(typeTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse type template: %w", err)
+	}
+
+	// Write custom types first
+	for _, typeDef := range types {
+		combinedTypeTemplate := struct {
+			Type CustomTypesSpec
+		}{
+			Type: typeDef,
+		}
+		if err := tmplType.Execute(file, combinedTypeTemplate); err != nil {
+			return fmt.Errorf("failed to write type to file: %w", err)
+		}
+	}
+
+	// Write struct definitions
 	for _, structDef := range structs {
-		combinedTemplate := struct {
+		combinedStructTemplate := struct {
 			Struct StructSpec
 			Common CommonSpec
 		}{
@@ -50,10 +69,9 @@ type {{ .Struct.Name }} struct {
 			Common: common,
 		}
 
-		if err := tmpl.Execute(file, combinedTemplate); err != nil {
+		if err := tmplStruct.Execute(file, combinedStructTemplate); err != nil {
 			return fmt.Errorf("failed to write struct to file: %w", err)
 		}
 	}
-
 	return nil
 }

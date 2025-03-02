@@ -16,13 +16,23 @@ implementers:
       - name: insured
         description: "Whether the vehicle is insured"
         type: bool
-        
+
   - name: Bike
-    description: "Another struct that will act as a concrete type for the interface"
+    description:
+      "Another struct that will act as a concrete type for the interface"
     fields:
       - name: kind
         description: "the type of bike e.g. BMX"
         type: string
+
+custom_types:
+  - name: MyMapType
+    definition: "map[string]int"
+    description: "A mapping of string keys to integer values"
+
+  - name: StringAlias
+    definition: "string"
+    description: "Alias for a standard string"
 
 custom_structs:
   - name: VehicleStatus
@@ -32,7 +42,8 @@ custom_structs:
         description: "The speed at which the vehicle is currently travelling"
         type: int
       - name: Direction
-        description: "The direction in which the vehicle is currently travelling"
+        description:
+          "The direction in which the vehicle is currently travelling"
         type: string
       - name: EngineOn
         description: "Boolean indicating whether an engine is turned on"
@@ -73,7 +84,8 @@ methods:
       - type: error
 
   - name: IsMoving
-    description: "Returns boolean indicating whether vehicle is currently moving"
+    description:
+      "Returns boolean indicating whether vehicle is currently moving"
     inputs: []
     outputs:
       - type: bool
@@ -124,7 +136,9 @@ methods:
       - type: "[]string"
 
   - name: LoadCargo
-    description: "Loads cargo onto vehicle. Returns remaining capacity of vehicle or error otherwise."
+    description:
+      "Loads cargo onto vehicle. Returns remaining capacity of vehicle or error
+      otherwise."
     inputs:
       - name: items
         type: "[]string"

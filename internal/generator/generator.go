@@ -32,3 +32,9 @@ type StructSpec struct {
 	Fields      []Param `yaml:"fields"`
 	Description string  `yaml:"description,omitempty"`
 }
+
+type CustomTypesSpec struct {
+	Name        string `yaml:"name"`
+	Definition  string `yaml:"definition"`
+	Description string `yaml:"description,omitempty"`
+}

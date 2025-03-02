@@ -12,13 +12,14 @@ import (
 
 // Config structure to match the YAML file format
 type Config struct {
-	Package        string                 `yaml:"package"`
-	Importer       string                 `yaml:"importer"`
-	PackageImports []string               `yaml:"package_imports"`
-	CustomStructs  []generator.StructSpec `yaml:"custom_structs"`
-	Implementers   []generator.StructSpec `yaml:"implementers"`
-	Name           string                 `yaml:"name"`
-	Methods        []generator.Method     `yaml:"methods"`
+	Package        string                      `yaml:"package"`
+	Importer       string                      `yaml:"importer"`
+	PackageImports []string                    `yaml:"package_imports"`
+	CustomStructs  []generator.StructSpec      `yaml:"custom_structs"`
+	CustomTypes    []generator.CustomTypesSpec `yaml:"custom_types"`
+	Implementers   []generator.StructSpec      `yaml:"implementers"`
+	Name           string                      `yaml:"name"`
+	Methods        []generator.Method          `yaml:"methods"`
 }
 
 var configPath string
@@ -49,7 +50,7 @@ var generateCmd = &cobra.Command{
 		}
 
 		// Generate custom structs (excluding the ones implementing the interface)
-		if err := generator.GenerateStructs(config.CustomStructs, commonSpec); err != nil {
+		if err := generator.GenerateTypesAndStructs(config.CustomStructs, config.CustomTypes, commonSpec); err != nil {
 			log.Fatalf("Error generating custom structs: %v", err)
 		}
 
