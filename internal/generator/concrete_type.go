@@ -27,7 +27,7 @@ func New{{ .Struct.Name }}() *{{ .Struct.Name }} {
 	}
 }
 
-{{ range .Interface.Methods }}
+{{ range .Struct.Methods }}
 {{- if .Description }}// {{ .Description }} {{- end }}
 func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}) ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}) {
 	{{- if gt (len .Outputs) 0 }}

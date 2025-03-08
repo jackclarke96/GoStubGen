@@ -26,6 +26,10 @@ func GenerateTypesAndStructs(structs []StructSpec, types []CustomTypesSpec, comm
 	// Define struct and custom type templates
 	const structTemplate = `// {{ .Struct.Description }}
 type {{ .Struct.Name }} struct {
+{{- range .Struct.Embedded }}
+	// embedded {{ . }} struct
+	{{ . }}
+{{- end }}
 {{- range .Struct.Fields }}
 	{{ if .Description }}// {{ .Description }} {{- end }}
     {{ .Name }} {{ .Type }}

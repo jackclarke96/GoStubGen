@@ -100,6 +100,15 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
+	fmt.Printf("Interface: %s\n", spec.Name)
+	fmt.Printf("Concrete: %s\n", structSpec.Name)
+	fmt.Printf("MockName: %s\n", fmt.Sprintf("mock%s", spec.Name))
+	fmt.Printf("MockConfigName: %s\n", fmt.Sprintf("mock%sConfig", spec.Name))
+	fmt.Printf("MockFactory: %s\n", fmt.Sprintf("%sMock", strings.ToLower(spec.Name)))
+	fmt.Printf("Methods: %+v\n", spec.Methods)
+	fmt.Printf("Package: %s\n", common.Package)
+	fmt.Printf("Importer: %s\n", common.Importer)
+
 	return tmpl.Execute(file, struct {
 		Interface      string
 		Concrete       string
