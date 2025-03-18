@@ -6,6 +6,30 @@ package_imports:
 package: vehicle
 importer: driver
 
+custom_types:
+  - name: MyMapType
+    definition: "map[string]int"
+    description: "A mapping of string keys to integer values"
+
+  - name: StringAlias
+    definition: "string"
+    description: "Alias for a standard string"
+
+custom_structs:
+  - name: VehicleStatus
+    description: "An example struct"
+    fields:
+      - name: Speed
+        description: "The speed at which the vehicle is currently travelling"
+        type: int
+      - name: Direction
+        description:
+          "The direction in which the vehicle is currently travelling"
+        type: string
+      - name: EngineOn
+        description: "Boolean indicating whether an engine is turned on"
+        type: bool
+
 interfaces:
   - name: Vehicle
     methods:
@@ -152,7 +176,7 @@ implementers:
 
   - name: FutureCar
     implements: ["SelfDriving"]
-    embeds: ["Car"]
+    embedded: ["Car"]
     description:
       "Another struct that will act as a concrete type for the SelfDriving
       interface"
@@ -162,28 +186,4 @@ implementers:
         type: int
       - name: insured
         description: "Whether the vehicle is insured"
-        type: bool
-
-custom_types:
-  - name: MyMapType
-    definition: "map[string]int"
-    description: "A mapping of string keys to integer values"
-
-  - name: StringAlias
-    definition: "string"
-    description: "Alias for a standard string"
-
-custom_structs:
-  - name: VehicleStatus
-    description: "An example struct"
-    fields:
-      - name: Speed
-        description: "The speed at which the vehicle is currently travelling"
-        type: int
-      - name: Direction
-        description:
-          "The direction in which the vehicle is currently travelling"
-        type: string
-      - name: EngineOn
-        description: "Boolean indicating whether an engine is turned on"
         type: bool

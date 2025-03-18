@@ -1,0 +1,116 @@
+package_imports:
+  - fmt
+  - errors
+  - math
+
+package: vehicle
+importer: driver
+
+custom_types:
+  - name: MyMapType
+    definition: "map[string]int"
+    description: "A mapping of string keys to integer values"
+
+  - name: StringAlias
+    definition: "string"
+    description: "Alias for a standard string"
+
+custom_structs:
+  - name: VehicleStatus
+    description: "An example struct"
+    fields:
+      - name: Speed
+        description: "The speed at which the vehicle is currently travelling"
+        type: int
+      - name: Direction
+        description:
+          "The direction in which the vehicle is currently travelling"
+        type: string
+      - name: EngineOn
+        description: "Boolean indicating whether an engine is turned on"
+        type: bool
+
+interfaces:
+  - name: FourWheelVehicle # Drive, Stop
+    methods:
+      - name: Drive
+        description: "Drives the vehicle forward."
+        inputs: []
+        outputs:
+          - type: string
+
+      - name: Stop
+        description: "Stops the vehicle."
+        inputs: []
+        outputs:
+          - type: string
+
+  - name: Car # Drive, Stop, OpenTrunk. Unique: OpenTrunk
+    embedded: [FourWheelVehicle]
+    methods:
+      - name: OpenTrunk
+        description: "Opens the car trunk."
+        inputs: []
+        outputs:
+          - type: string
+
+  - name: SelfDriving # Drive, Stop, OpenTrunk, ActivateAutoPilot Unique: ActivateAutoPilot
+    embedded: [Car]
+    methods:
+      - name: ActivateAutopilot
+        description: "Activates self-driving mode."
+        inputs: []
+        outputs:
+          - type: string
+
+implementers:
+  - name: Sedan
+    implements: ["Car"] # Drive, Stop, OpenTrunk
+    description: "A standard four-door sedan car."
+    fields:
+      - name: color
+        description: "The color of the sedan."
+        type: string
+      - name: seats
+        description: "Number of seats in the sedan."
+        type: int
+
+  # - name: SportsSedan
+  #   implements: ["Car"] # Drive, Stop, OpenTrunk
+  #   embedded: "Sedan"
+  #   description: "A standard four-door sedan car."
+  #   fields:
+  #     - name: color
+  #       description: "The color of the sedan."
+  #       type: string
+  #     - name: seats
+  #       description: "Number of seats in the sedan."
+  #       type: int
+
+  - name: SportsCar
+    implements: ["Car"] # Drive, Stop, OpenTrunk.
+    description: "A high-performance sports car."
+    fields:
+      - name: topSpeed
+        description: "The top speed of the car."
+        type: int
+
+  - name: RoboCar
+    implements: ["SelfDriving"] # Drive, Stop, OpenTrunk, ActivateAutopilot
+    embedded: ["Sedan"] # Drive, Stop, OpenTrunk. UNIQUE = ActivateAutopilot
+    description: "A self-driving robotic car."
+    fields:
+      - name: aiVersion
+        description: "Version of the AI software."
+        type: string
+
+  # - name: SelfDrivingSportsSedan
+  #   implements: ["Car"] # Drive, Stop, OpenTrunk
+  #   description: "A standard four-door sedan car."
+  #   fields:
+  #     - name: color
+  #       description: "The color of the sedan."
+  #       type: string
+  #     - name: seats
+  #       description: "Number of seats in the sedan."
+  #       type: int

@@ -2,6 +2,7 @@ package vehicle
 
 // Another struct that will act as a concrete type for the SelfDriving interface
 type FutureCar struct {
+	Car
 	doors   int
 	insured bool
 }

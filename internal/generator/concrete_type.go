@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateStruct generates a Go struct file with stub methods
-func GenerateConcreteTypes(spec InterfaceSpec, implementers []StructSpec, common CommonSpec) error {
+func GenerateConcreteTypes(implementers []StructSpec, common CommonSpec) error {
 	const structTemplate = `package {{ .Common.Package }}
 
 {{ if .Struct.Description }}// {{ .Struct.Description }} {{ end }}
@@ -57,13 +57,11 @@ func (s *{{ $.Struct.Name }}) {{ .Name }}({{ range $index, $param := .Inputs }}{
 		}
 
 		err = tmpl.Execute(file, struct {
-			Interface InterfaceSpec
-			Struct    StructSpec
-			Common    CommonSpec
+			Struct StructSpec
+			Common CommonSpec
 		}{
-			Interface: spec,
-			Struct:    structDef,
-			Common:    common,
+			Struct: structDef,
+			Common: common,
 		})
 		if err != nil {
 			return err

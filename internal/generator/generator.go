@@ -12,6 +12,7 @@ type InterfaceSpec struct {
 	Methods  []Method `yaml:"methods"`
 }
 
+// The top level yaml entry containing all interfaces
 type Spec struct {
 	Interfaces []InterfaceSpec `yaml:"interfaces"`
 }
@@ -30,6 +31,7 @@ type Param struct {
 	Type string `yaml:"type"`
 }
 
+// fields represents the field of a struct
 type field struct {
 	Name        string `yaml:"name,omitempty"`
 	Type        string `yaml:"type"`
@@ -40,7 +42,7 @@ type field struct {
 type StructSpec struct {
 	Name        string   `yaml:"name"`
 	Embedded    []string `yaml:"embedded"`
-	Implements  []string `yaml:"implements"` // todo pick up from here.
+	Implements  []string `yaml:"implements"`
 	Fields      []field  `yaml:"fields"`
 	Description string   `yaml:"description,omitempty"`
 	Methods     []Method
