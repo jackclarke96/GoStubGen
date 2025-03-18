@@ -127,8 +127,10 @@ func (stm StructToMethods) combineMethods(structs []string) []Method {
 	combined := []Method{}
 	methodAlreadyPresent := map[string]bool{}
 	for _, structName := range structs {
+		fmt.Printf("\n    method set provided by embedded struct: %s", structName)
 		if structMethodSet, found := stm[structName]; found {
 			for _, method := range structMethodSet {
+				fmt.Printf("\n      - %s", method.Name)
 				if !methodAlreadyPresent[method.Name] {
 					combined = append(combined, method)
 					methodAlreadyPresent[method.Name] = true
@@ -138,6 +140,7 @@ func (stm StructToMethods) combineMethods(structs []string) []Method {
 			fmt.Printf("Warning: Struct %s could not be found in struct set. Is YAML correct?\n", structName)
 		}
 	}
+	fmt.Println("\n")
 	return combined
 }
 
@@ -209,15 +212,24 @@ func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method,
 
 	// for each struct spec
 	for _, s := range ss {
-		fmt.Printf("Struct: %s\n", s.Name)
+		fmt.Printf("\n------------------------ Struct:%s ------------------------\n", s.Name)
+		fmt.Println("\n  full method set required by implemented interfaces:\n")
 		// init unique set of methods for struct
 		unique := []Method{}
 
 		// extract full set of methods for that struct
 		fullSet := stm[s.Name]
+		for _, meth := range fullSet {
+			fmt.Println("  -", meth.Name)
+		}
 
 		// get set of methods provided by embedded structs
 		embeddedMethods := stm.combineMethods(s.Embedded)
+
+		fmt.Println("\n  method set provided by embedded structs:\n")
+		for _, meth := range embeddedMethods {
+			fmt.Println("  -", meth.Name)
+		}
 
 		// Create a set of embedded method names for quick lookup
 		embeddedMethodNames := make(map[string]bool)
@@ -231,17 +243,15 @@ func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method,
 				unique = append(unique, method)
 			}
 		}
+
+		fmt.Println("\n  unique set required in addition to embedded methods:\n")
+
+		for _, meth := range unique {
+			fmt.Println("  -", meth.Name)
+		}
 		structToUniqueMethods[s.Name] = unique
 
 	}
 
 	return interfaceToUniqueMethods, structToUniqueMethods
 }
-
-// so at this point for any given combination of interfaces.
-// next, we should repeat for structs. For each struct, we can extract its "implements" to get its full method set. Just use combineMethods again to get the combo
-// then for each embedded struct, get its "implements" and remove it's method set.
-
-// need a function such that if a struct embeds another struct, then can tell which extra methods need to be added in order to satisfy an interface...
-
-// so, collect the set of all methods of all methods the struct must have as receiver, then work through the structs it embeds and remove methods.
