@@ -54,3 +54,11 @@ type CustomTypesSpec struct {
 	Definition  string `yaml:"definition"`
 	Description string `yaml:"description,omitempty"`
 }
+
+func (s StructSpec) getName() string {
+	return s.Name
+}
+
+func (i InterfaceSpec) getName() string {
+	return i.Name
+}

@@ -19,22 +19,13 @@ type InterfaceToMethods map[string]MethodNameToMethod
 // maps each struct to its method set
 type StructToMethods map[string]MethodNameToMethod
 
-// Loops through an array of interface YAML defs and maps the interface against its own name
-func INameToSpec(s []InterfaceSpec) iNameToSpec {
-	nts := iNameToSpec{}
-	for _, i := range s {
-		nts[i.Name] = i
+// Loops through an array of interface or struct YAML defs and maps the spec against its own name
+func mapByName[T interface{ getName() string }](items []T) map[string]T {
+	m := make(map[string]T)
+	for _, item := range items {
+		m[item.getName()] = item
 	}
-	return nts
-}
-
-// Loops through an array of struct YAML defs and maps the struct against its own name
-func SNameToSpec(s []StructSpec) sNameToSpec {
-	nts := sNameToSpec{}
-	for _, v := range s {
-		nts[v.Name] = v
-	}
-	return nts
+	return m
 }
 
 // Maps an interface name to its methods, including embedded methods
@@ -104,12 +95,12 @@ func (stm StructToMethods) MakeMap(nts sNameToSpec, itm InterfaceToMethods, name
 }
 
 // takes the map of interface names to their method set and returns unique set of combined methods of provided subset of interfaces
-func (itm InterfaceToMethods) combineMethods(interfaces []string) []Method {
+func combineMethods[T ~map[string]Method](methodSets map[string]T, names []string) []Method {
 	combined := []Method{}
 	methodAlreadyPresent := map[string]bool{}
-	for i := range interfaces {
-		iFace := interfaces[i]
-		if interfaceMethodSet, found := itm[iFace]; found {
+	for i := range names {
+		iFace := names[i]
+		if interfaceMethodSet, found := methodSets[iFace]; found {
 			for _, method := range interfaceMethodSet {
 				if _, alreadyPresent := methodAlreadyPresent[method.Name]; !alreadyPresent {
 					combined = append(combined, method)
@@ -122,49 +113,6 @@ func (itm InterfaceToMethods) combineMethods(interfaces []string) []Method {
 	return combined
 }
 
-// takes the map of struct names to their method set and returns a unique set of combined methods of provided subset of structs
-func (stm StructToMethods) combineMethods(structs []string) []Method {
-	combined := []Method{}
-	methodAlreadyPresent := map[string]bool{}
-	for _, structName := range structs {
-		fmt.Printf("\n    method set provided by embedded struct: %s", structName)
-		if structMethodSet, found := stm[structName]; found {
-			for _, method := range structMethodSet {
-				fmt.Printf("\n      - %s", method.Name)
-				if !methodAlreadyPresent[method.Name] {
-					combined = append(combined, method)
-					methodAlreadyPresent[method.Name] = true
-				}
-			}
-		} else {
-			fmt.Printf("Warning: Struct %s could not be found in struct set. Is YAML correct?\n", structName)
-		}
-	}
-	fmt.Println("\n")
-	return combined
-}
-
-// gets the set of methods required for an interface MINUS the ones provided by the embedded interfaces
-func (i InterfaceSpec) GetUniqueMethods(itm InterfaceToMethods) []Method {
-	fullSet := itm[i.Name]
-	embeddedMethods := itm.combineMethods(i.Embedded)
-	unique := []Method{}
-
-	// Create a set of embedded method names for quick lookup
-	embeddedMethodNames := make(map[string]bool)
-	for _, method := range embeddedMethods {
-		embeddedMethodNames[method.Name] = true
-	}
-
-	// Filter out methods that are in the embedded set
-	for _, method := range fullSet {
-		if !embeddedMethodNames[method.Name] {
-			unique = append(unique, method)
-		}
-	}
-	return unique
-}
-
 // gets the set of methods required for an interface MINUS the ones provided by the embedded interfaces
 func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method, map[string][]Method) {
 	interfaceToUniqueMethods := map[string][]Method{}
@@ -175,8 +123,8 @@ func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method,
 	itm := InterfaceToMethods{}
 
 	// map each struct spec against its own name
-	sNameToSpec := SNameToSpec(ss)
-	iNameToSpec := INameToSpec(is)
+	sNameToSpec := mapByName(ss)
+	iNameToSpec := mapByName(is)
 
 	// hydrate itm with full method set of each interface
 	for k := range iNameToSpec {
@@ -194,7 +142,7 @@ func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method,
 
 		fullSet := itm[i.Name]
 
-		embeddedMethods := itm.combineMethods(i.Embedded)
+		embeddedMethods := combineMethods(itm, i.Embedded)
 
 		embeddedMethodNames := make(map[string]bool)
 		for _, method := range embeddedMethods {
@@ -224,7 +172,7 @@ func GetUniqueMethods(ss []StructSpec, is []InterfaceSpec) (map[string][]Method,
 		}
 
 		// get set of methods provided by embedded structs
-		embeddedMethods := stm.combineMethods(s.Embedded)
+		embeddedMethods := combineMethods(stm, s.Embedded)
 
 		fmt.Println("\n  method set provided by embedded structs:\n")
 		for _, meth := range embeddedMethods {
