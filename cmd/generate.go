@@ -37,120 +37,48 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Invalid YAML format: %v", err)
 		}
 
-		// commonSpec := generator.CommonSpec{
-		// 	Package:  config.Package,
-		// 	Importer: config.Importer,
-		// }
+		commonSpec := generator.CommonSpec{
+			Package:  config.Package,
+			Importer: config.Importer,
+		}
 
+		// get unique methods of each interface and struct (with methods provided by embedded interfaces/structs removed)
 		uniqueInterfaceMethods, uniqueStructMethods := generator.GetUniqueMethods(config.Implementers, config.Interfaces)
-		fmt.Printf("UniqueInterfaceMethods %+v\n", uniqueInterfaceMethods)
-		fmt.Printf("UniqueStructMethods %+v\n", uniqueStructMethods)
 
-		// iNameToSpec := generator.INameToSpec(config.Interfaces)
-		// sNameToSpec := generator.SNameToSpec(config.Implementers)
+		// Update interfaces and implementers to have unique methods calculated in previous step
+		for i := range config.Interfaces {
+			config.Interfaces[i].Methods = uniqueInterfaceMethods[config.Interfaces[i].Name]
+		}
 
-		// itm := generator.InterfaceToMethods{}
-		// stm := generator.StructToMethods{}
+		// Update implementing structs to only have minimal set of methods required to satisfy the method set
+		for i := range config.Implementers {
+			config.Implementers[i].Methods = uniqueStructMethods[config.Implementers[i].Name]
+		}
 
-		// // 1a: For each interface, get itm gives a map of interfaceName[[]all-methods]
-		// for k := range iNameToSpec {
-		// 	itm.MakeMap(iNameToSpec, k)
-		// }
+		// Generate custom structs (excluding the ones implementing the interface).
+		if err := generator.GenerateTypesAndStructs(config.CustomStructs, config.CustomTypes, commonSpec); err != nil {
+			log.Fatalf("Error generating custom structs: %v", err)
+		}
 
-		// for k, v := range itm {
-		// 	fmt.Printf("Interface: %s\n", k)
-		// 	for _, method := range v {
-		// 		fmt.Printf("  - %s\n", method.Name)
-		// 	}
-		// 	fmt.Println("-----------------------------")
-		// }
+		// Generate interfaces.
+		if err := generator.GenerateInterfaces(config.Interfaces, commonSpec); err != nil {
+			log.Fatalf("Error generating interface: %v", err)
+		}
 
-		// // 2a: For each struct, get itm gives a map of structName[[]all-methods]
-		// for k := range sNameToSpec {
-		// 	stm.MakeMap(sNameToSpec, itm, k)
-		// }
+		// Generate implementer structs.
+		if err := generator.GenerateConcreteTypes(config.Implementers, commonSpec); err != nil {
+			log.Fatalf("Error generating concrete types: %v", err)
+		}
 
-		// for k, v := range stm {
-		// 	fmt.Printf("Struct: %s\n", k)
-		// 	for _, method := range v {
-		// 		fmt.Printf("  - %s\n", method.Name)
-		// 	}
-		// 	fmt.Println("-----------------------------")
-		// }
+		// Generate mocks.
+		for _, i := range config.Interfaces {
+			mockInterfaceSpec := prefixTypesWithPackageName(config, i, commonSpec.Package)
+			if err := generator.GenerateMock(mockInterfaceSpec, generator.StructSpec{}, commonSpec); err != nil {
+				log.Fatalf("Error generating mock: %v", err)
+			}
+		}
 
-		// // 1b: get unique struct methods
-		// for _, structSpec := range config.Implementers {
-		// 	fmt.Printf("Struct: %s\n", structSpec.Name)
-		// 	uniqueMethods := structSpec.GetUniqueMethods(stm)
-		// 	for _, method := range uniqueMethods {
-		// 		fmt.Printf("  - %s\n", method.Name)
-		// 	}
-		// }
-
-		// // 2b: get unique interface methods
-		// for _, intSpec := range config.Interfaces {
-		// 	fmt.Printf("intSpec: %s\n", intSpec.Name)
-		// 	uniqueMethods := intSpec.GetUniqueMethods(itm)
-		// 	for _, method := range uniqueMethods {
-		// 		fmt.Printf("  - %s\n", method.Name)
-		// 	}
-		// }
-		// Add methods to implementers
-		// for i := range config.Implementers {
-		// 	for _, implemented := range config.Implementers[i].Implements {
-		// 		fmt.Println(itm[implemented])
-		// 		config.Implementers[i].Methods = append(itm[implemented], config.Implementers[i].Methods...)
-		// 	}
-		// }
-
-		// // // Print all interfaces and their methods
-		// // fmt.Println("\nInterfaces and their Methods:\n")
-		// // for _, is := range config.Interfaces {
-		// // 	fmt.Printf("Interface: %s\n", is.Name)
-		// // 	for _, method := range is.Methods {
-		// // 		fmt.Printf("  - %s\n", method.Name)
-		// // 	}
-		// // 	fmt.Println("-----------------------------")
-		// // }
-
-		// // // Print all implementers and their methods
-		// // fmt.Println("\nImplementers and their Methods:\n")
-		// // for _, implementer := range config.Implementers {
-		// // 	fmt.Printf("Implementer: %s (Implements: %v)\n", implementer.Name, implementer.Implements)
-		// // 	for _, method := range implementer.Methods {
-		// // 		fmt.Printf("  - %s\n", method.Name)
-		// // 	}
-		// // 	fmt.Println("-----------------------------")
-		// // }
-
-		// // Generate custom structs (excluding the ones implementing the interface)
-		// if err := generator.GenerateTypesAndStructs(config.CustomStructs, config.CustomTypes, commonSpec); err != nil {
-		// 	log.Fatalf("Error generating custom structs: %v", err)
-		// }
-
-		// // Generate the interface
-		// if err := generator.GenerateInterface(config.Interfaces, commonSpec); err != nil {
-		// 	log.Fatalf("Error generating interface: %v", err)
-		// }
-
-		// // Generate concrete types structs
-		// if err := generator.GenerateConcreteTypes(config.Implementers, commonSpec); err != nil {
-		// 	log.Fatalf("Error generating concrete types: %v", err)
-		// }
-
-		// // Generate the mocks
-		// for i := range config.Interfaces {
-		// 	config.Interfaces[i].Methods = itm[config.Interfaces[i].Name]
-		// }
-
-		// for _, i := range config.Interfaces {
-		// 	mockInterfaceSpec := prefixTypesWithPackageName(config, i, commonSpec.Package)
-		// 	if err := generator.GenerateMock(mockInterfaceSpec, generator.StructSpec{}, commonSpec); err != nil {
-		// 		log.Fatalf("Error generating mock: %v", err)
-		// 	}
-		// }
-
-		// fmt.Println("Code generation complete!")
+		fmt.Println("Code generation complete!")
 	},
 }
 
@@ -158,28 +86,4 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to YAML config file")
 	generateCmd.MarkFlagRequired("config")
-}
-
-func prefixTypesWithPackageName(config Config, spec generator.InterfaceSpec, packageName string) generator.InterfaceSpec {
-	// Generate the mock implementation
-	customTypes := make(map[string]bool)
-	for _, cs := range config.CustomStructs {
-		customTypes[cs.Name] = true
-	}
-
-	// Prefix types with package name so that they are suitable for import into external package when added to mocks.
-	for mIdx, m := range spec.Methods {
-		for iIdx, inp := range m.Inputs {
-			if customTypes[inp.Type] {
-				spec.Methods[mIdx].Inputs[iIdx].Type = fmt.Sprintf("%s.%s", packageName, inp.Type)
-			}
-		}
-		for oIdx, out := range m.Outputs {
-			if customTypes[out.Type] {
-				spec.Methods[mIdx].Outputs[oIdx].Type = fmt.Sprintf("%s.%s", packageName, out.Type)
-			}
-		}
-	}
-	return spec
-
 }

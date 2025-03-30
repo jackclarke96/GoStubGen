@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-func GenerateInterface(spec []InterfaceSpec, common CommonSpec) error {
+func GenerateInterfaces(spec []InterfaceSpec, common CommonSpec) error {
 	const interfaceTemplate = `package {{ .Common.Package}}
 
 // {{ .Interface.Name }} defines the interface

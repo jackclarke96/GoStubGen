@@ -2,8 +2,8 @@ package vehicle
 
 // SelfDriving defines the interface
 type SelfDriving interface {
-	// embedded Vehicle interface
-	Vehicle
-	// driverless driving
-	DriveSelf(endLocation string) (error)
+	// embedded Car interface
+	Car
+	// Activates self-driving mode.
+	ActivateAutopilot() (string)
 }

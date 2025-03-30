@@ -13,6 +13,9 @@ func GenerateConcreteTypes(implementers []StructSpec, common CommonSpec) error {
 
 {{ if .Struct.Description }}// {{ .Struct.Description }} {{ end }}
 type {{ .Struct.Name }} struct {
+{{- range .Struct.Embedded }}
+	{{ . }}
+{{- end }}
 {{- range .Struct.Fields }}
     {{ .Name }} {{ .Type }}
 {{- end }}
