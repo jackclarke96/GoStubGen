@@ -7,7 +7,6 @@ import (
 	"text/template"
 )
 
-// in here add methods that need to be mocked
 func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
 	const mockTemplate = `package {{ .Importer }}
 
