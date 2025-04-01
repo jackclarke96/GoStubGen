@@ -114,7 +114,7 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 		Concrete:       structSpec.Name,
 		MockName:       fmt.Sprintf("mock%s", spec.Name),
 		MockConfigName: fmt.Sprintf("mock%sConfig", spec.Name),
-		MockFactory:    fmt.Sprintf("%sMock", strings.ToLower(spec.Name)),
+		MockFactory:    fmt.Sprintf("%sMock", strings.ToLower(spec.Name[:1])+spec.Name[1:]),
 		Methods:        spec.Methods,
 		Package:        common.Package,
 		Importer:       common.Importer,

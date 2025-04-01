@@ -42,3 +42,9 @@ func (d *Driver) drive() error {
 	fmt.Printf("%+v pieces of cargo retrieved!", cargo)
 	return nil
 }
+
+// more complex driver method involving startup of background routine
+
+// func (d *Driver) soemthing() {
+// 	defer d.vehicle.ApplyBrakes()
+// }
