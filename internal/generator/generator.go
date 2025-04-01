@@ -40,12 +40,14 @@ type field struct {
 
 // StructSpec represents a struct definition
 type StructSpec struct {
-	Name        string   `yaml:"name"`
-	Embedded    []string `yaml:"embedded"`
-	Implements  []string `yaml:"implements"`
-	Fields      []field  `yaml:"fields"`
-	Description string   `yaml:"description,omitempty"`
-	Methods     []Method
+	Name          string   `yaml:"name"`
+	Embedded      []string `yaml:"embedded"`
+	Implements    []string `yaml:"implements"`
+	Fields        []field  `yaml:"fields"`
+	Description   string   `yaml:"description,omitempty"`
+	Methods       []Method
+	FlattenEmbeds *bool `yaml:"flatten_embeds,omitempty"` // optional override
+
 }
 
 // CustomTypeSpec represents a custom (non-struct) type definition

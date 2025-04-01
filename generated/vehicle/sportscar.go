@@ -12,12 +12,12 @@ func NewSportsCar() *SportsCar {
 	}
 }
 
-// Drives the vehicle forward.
-func (s *SportsCar) Drive() (string) {
-	return ""
-}
 // Stops the vehicle.
 func (s *SportsCar) Stop() (string) {
+	return ""
+}
+// Drives the vehicle forward.
+func (s *SportsCar) Drive() (string) {
 	return ""
 }
 // Opens the car trunk.

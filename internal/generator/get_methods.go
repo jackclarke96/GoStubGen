@@ -19,6 +19,16 @@ type InterfaceNameToMethodMap map[string]MethodNameToMethodMap
 // StructNameToMethodMap maps struct names to the full set of methods required by the interfaces they implement (including embedded structs)
 type StructNameToMethodMap map[string]MethodNameToMethodMap
 
+// each entry maps an interface or struct name to its method set
+type MethodSets struct {
+	// full set of methods a struct must have to implement interfaces specified in yaml
+	FullSets map[string][]Method
+	// full set of methods a struct must have to implement interfaces specified in yaml minus methods provided by embedded structs
+	UniqueSets map[string][]Method
+	// methods provided by embedded structs
+	EmbeddedSets map[string][]Method
+}
+
 // mapSpecsByName takes a slice of specs (struct or interface) and returns a map from name to spec for quick lookup
 func mapSpecsByName[T interface{ getName() string }](items []T) map[string]T {
 	m := make(map[string]T)
@@ -152,7 +162,7 @@ Algorithm Overview:
 4. For each interface, subtract methods inherited from embedded interfaces to find its unique methods.
 5. For each struct, subtract methods inherited from embedded structs to find its unique required methods.
 */
-func GetUniqueMethods(structSpecs []StructSpec, interfaceSpecs []InterfaceSpec) (map[string][]Method, map[string][]Method) {
+func GetMethods(structSpecs []StructSpec, interfaceSpecs []InterfaceSpec) (MethodSets, MethodSets) {
 
 	// init map mapping interface names to their method sets
 	interfaceNameToMethods := InterfaceNameToMethodMap{}
@@ -174,20 +184,45 @@ func GetUniqueMethods(structSpecs []StructSpec, interfaceSpecs []InterfaceSpec) 
 	}
 
 	// Compute unique methods for each interface by taking union of methods across interface and any embedded interfaces, then removing methods already present due to embedded interfaces
-	interfaceToUniqueMethods := map[string][]Method{}
+	interfaceMethodSets := MethodSets{
+		FullSets:     map[string][]Method{},
+		UniqueSets:   map[string][]Method{},
+		EmbeddedSets: map[string][]Method{},
+	}
 	for _, iface := range interfaceSpecs {
 		fullSet := interfaceNameToMethods[iface.Name]
 		embedded := mergeMethodMapsByProviderName(interfaceNameToMethods, iface.Embedded)
-		interfaceToUniqueMethods[iface.Name] = subtractMethods(fullSet, embedded)
+		unique := subtractMethods(fullSet, embedded)
+
+		interfaceMethodSets.FullSets[iface.Name] = mapsToSlice(fullSet)
+		interfaceMethodSets.UniqueSets[iface.Name] = unique
+		interfaceMethodSets.EmbeddedSets[iface.Name] = embedded
 	}
 
 	// Compute unique methods for each struct by taking union of methods across struct and any embedded structs, then removing methods already present due to embedded structs
-	structToUniqueMethods := map[string][]Method{}
+	structMethodSets := MethodSets{
+		FullSets:     map[string][]Method{},
+		UniqueSets:   map[string][]Method{},
+		EmbeddedSets: map[string][]Method{},
+	}
+
 	for _, s := range structSpecs {
 		fullSet := structNameToMethods[s.Name]
 		embedded := mergeMethodMapsByProviderName(structNameToMethods, s.Embedded)
-		structToUniqueMethods[s.Name] = subtractMethods(fullSet, embedded)
+		unique := subtractMethods(fullSet, embedded)
+
+		structMethodSets.FullSets[s.Name] = mapsToSlice(fullSet)
+		structMethodSets.UniqueSets[s.Name] = unique
+		structMethodSets.EmbeddedSets[s.Name] = embedded
 	}
 
-	return interfaceToUniqueMethods, structToUniqueMethods
+	return interfaceMethodSets, structMethodSets
+}
+
+func mapsToSlice(m map[string]Method) []Method {
+	methods := make([]Method, 0, len(m))
+	for _, method := range m {
+		methods = append(methods, method)
+	}
+	return methods
 }

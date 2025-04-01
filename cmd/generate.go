@@ -10,6 +10,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// use full set (iFace) for mock interfaces
+// use full set (struct) if fkag provided
+
 // Config structure to match the YAML file format
 type Config struct {
 	Package       string                      `yaml:"package"`
@@ -21,6 +24,7 @@ type Config struct {
 }
 
 var configPath string
+var flattenEmbedsFlag bool
 
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -43,16 +47,21 @@ var generateCmd = &cobra.Command{
 		}
 
 		// get unique methods of each interface and struct (with methods provided by embedded interfaces/structs removed)
-		uniqueInterfaceMethods, uniqueStructMethods := generator.GetUniqueMethods(config.Implementers, config.Interfaces)
+		interfaceMethods, structMethods := generator.GetMethods(config.Implementers, config.Interfaces)
 
 		// Update interfaces and implementers to have unique methods calculated in previous step
 		for i := range config.Interfaces {
-			config.Interfaces[i].Methods = uniqueInterfaceMethods[config.Interfaces[i].Name]
+			config.Interfaces[i].Methods = interfaceMethods.UniqueSets[config.Interfaces[i].Name]
 		}
 
-		// Update implementing structs to only have minimal set of methods required to satisfy the method set
 		for i := range config.Implementers {
-			config.Implementers[i].Methods = uniqueStructMethods[config.Implementers[i].Name]
+			if flattenEmbedsFlag {
+				// Update implementing structs to have full set of methods required to satisfy the method set
+				config.Implementers[i].Methods = structMethods.FullSets[config.Implementers[i].Name]
+			} else {
+				// Update implementing structs to only have minimal set of methods required to satisfy the method set
+				config.Implementers[i].Methods = structMethods.UniqueSets[config.Implementers[i].Name]
+			}
 		}
 
 		// Generate custom structs (excluding the ones implementing the interface).
@@ -70,6 +79,11 @@ var generateCmd = &cobra.Command{
 			log.Fatalf("Error generating concrete types: %v", err)
 		}
 
+		// Update interfaces to have all required methods since mocks do not embed other mocks
+		for i := range config.Interfaces {
+			config.Interfaces[i].Methods = interfaceMethods.FullSets[config.Interfaces[i].Name]
+		}
+
 		// Generate mocks.
 		for _, i := range config.Interfaces {
 			mockInterfaceSpec := prefixTypesWithPackageName(config, i, commonSpec.Package)
@@ -85,5 +99,6 @@ var generateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to YAML config file")
+	generateCmd.Flags().BoolVar(&flattenEmbedsFlag, "flatten-embeds", false, "Flatten embedded method promotion into explicit method generation")
 	generateCmd.MarkFlagRequired("config")
 }

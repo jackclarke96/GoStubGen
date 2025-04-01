@@ -17,4 +17,16 @@ func NewRoboCar() *RoboCar {
 func (s *RoboCar) ActivateAutopilot() (string) {
 	return ""
 }
+// Drives the vehicle forward.
+func (s *RoboCar) Drive() (string) {
+	return ""
+}
+// Opens the car trunk.
+func (s *RoboCar) OpenTrunk() (string) {
+	return ""
+}
+// Stops the vehicle.
+func (s *RoboCar) Stop() (string) {
+	return ""
+}
 

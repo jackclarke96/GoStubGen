@@ -18,12 +18,12 @@ func NewSedan() *Sedan {
 func (s *Sedan) OpenTrunk() (string) {
 	return ""
 }
-// Drives the vehicle forward.
-func (s *Sedan) Drive() (string) {
-	return ""
-}
 // Stops the vehicle.
 func (s *Sedan) Stop() (string) {
+	return ""
+}
+// Drives the vehicle forward.
+func (s *Sedan) Drive() (string) {
 	return ""
 }
 
