@@ -2,22 +2,28 @@
 
 ## Overview
 
-GoStubGen is a code generation tool that takes a YAML specification of an interface and its concrete types and generates a structured Go package. The generated package includes:
+GoStubGen is a code generation tool that takes a YAML specification of an
+interface and its concrete types and generates a structured Go package. The
+generated package includes:
 
 - Interface definitions
 - Concrete implementations
 - Mocking framework for unit testing
 
-Designed for integration into a parent package using the dependency injection pattern, GoStubGen ensures full control over injected dependencies, making unit testing more reliable and maintainable.
+Designed for integration into a parent package using the dependency injection
+pattern, GoStubGen ensures full control over injected dependencies, making unit
+testing more reliable and maintainable.
 
 ## Features
+
 - **Automatic interface and struct generation** based on YAML configuration
 - **Mocking framework generation** for unit testing
 - **Dependency injection support** for flexible runtime behavior
 
 ## Installation
 
-Ensure you have Go installed. Then, clone the repository and build the generator:
+Ensure you have Go installed. Then, clone the repository and build the
+generator:
 
 ```sh
 git clone https://github.com/jackclarke/GoStubGen.git
@@ -72,7 +78,7 @@ go run main.go generate -c <path-to-yaml>
 For example, using:
 
 ```sh
-go run main.go generate -c /examples/vehicle-example/example.yaml
+go run main.go generate -c /examples/vehicle-example/vehicle_example.yaml
 ```
 
 will generate the following files:
@@ -81,13 +87,17 @@ will generate the following files:
 - **`vehicle/car.go`** – Implements `Vehicle` for a `Car` type.
 - **`vehicle/bike.go`** – Implements `Vehicle` for a `Bike` type.
 - **`vehicle/custom_types.go`** – Provides dependency injection setup.
-- **`importer/vehicle_mock_test.go`** – Generates a mock implementation for unit testing.
+- **`importer/vehicle_mock_test.go`** – Generates a mock implementation for unit
+  testing.
 
-These files allow for easy integration into a larger Go project with dependency injection support.
+These files allow for easy integration into a larger Go project with dependency
+injection support.
 
 ## Example: Using Dependency Injection
 
-In `examples/vehicle-example` is a package built using the dependency injection method encouraged by this pakage. You can inject a `Vehicle` implementation into the `Driver` struct:
+In `examples/vehicle-example` is a package built using the dependency injection
+method encouraged by this pakage. You can inject a `Vehicle` implementation into
+the `Driver` struct:
 
 ```go
 import (
@@ -113,16 +123,17 @@ This enables seamless swapping of implementations for testing and production.
 
 ## Using the Mocking Framework
 
-GoStubGen provides a built-in mocking system that allows you to override methods dynamically.  
+GoStubGen provides a built-in mocking system that allows you to override methods
+dynamically.
 
 The generated mock struct offers the following methods:
 
-| Method                    | Description |
-|---------------------------|-------------|
-| `enable<MethodName>Mock()`  | Enables the mock for the method. |
-| `disable<MethodName>Mock()` | Restores original functionality. |
-| `set<MethodName>Response(...)` | Defines a static response for the mock. |
-| `set<MethodName>Func(func(...) ...)` | Allows complete method override. |
+| Method                               | Description                             |
+| ------------------------------------ | --------------------------------------- |
+| `enable<MethodName>Mock()`           | Enables the mock for the method.        |
+| `disable<MethodName>Mock()`          | Restores original functionality.        |
+| `set<MethodName>Response(...)`       | Defines a static response for the mock. |
+| `set<MethodName>Func(func(...) ...)` | Allows complete method override.        |
 
 ### Mocking Example
 
@@ -152,12 +163,14 @@ func TestDriverDriveWithMock(t *testing.T) {
 ```
 
 Before mocking:
+
 ```go
 car := vehicle.NewCar()
 car.LoadCargo(10)  // Works as expected
 ```
 
 After mocking:
+
 ```go
 mockVeh := vehicleMock(vehicle.NewCar())
 mockVeh.enableLoadCargoMock()
