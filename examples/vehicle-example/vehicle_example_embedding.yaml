@@ -75,18 +75,6 @@ implementers:
         description: "Number of seats in the sedan."
         type: int
 
-  # - name: SportsSedan
-  #   implements: ["Car"] # Drive, Stop, OpenTrunk
-  #   embedded: "Sedan"
-  #   description: "A standard four-door sedan car."
-  #   fields:
-  #     - name: color
-  #       description: "The color of the sedan."
-  #       type: string
-  #     - name: seats
-  #       description: "Number of seats in the sedan."
-  #       type: int
-
   - name: SportsCar
     implements: ["Car"] # Drive, Stop, OpenTrunk.
     description: "A high-performance sports car."
@@ -103,14 +91,3 @@ implementers:
       - name: aiVersion
         description: "Version of the AI software."
         type: string
-
-  # - name: SelfDrivingSportsSedan
-  #   implements: ["Car"] # Drive, Stop, OpenTrunk
-  #   description: "A standard four-door sedan car."
-  #   fields:
-  #     - name: color
-  #       description: "The color of the sedan."
-  #       type: string
-  #     - name: seats
-  #       description: "Number of seats in the sedan."
-  #       type: int

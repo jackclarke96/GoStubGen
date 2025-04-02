@@ -162,6 +162,7 @@ Algorithm Overview:
 4. For each interface, subtract methods inherited from embedded interfaces to find its unique methods.
 5. For each struct, subtract methods inherited from embedded structs to find its unique required methods.
 */
+
 func GetMethods(structSpecs []StructSpec, interfaceSpecs []InterfaceSpec) (MethodSets, MethodSets) {
 
 	// init map mapping interface names to their method sets
