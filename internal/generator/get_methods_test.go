@@ -83,7 +83,7 @@ func TestGetMethods(t *testing.T) {
 			}{
 				"MyReader": {
 					Unique:   []Method{{Name: "Read"}},
-					Full:     []Method{{Name: "Rea"}},
+					Full:     []Method{{Name: "Read"}},
 					Embedded: []Method{},
 				},
 			},
