@@ -10,9 +10,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// use full set (iFace) for mock interfaces
-// use full set (struct) if fkag provided
-
 // Config structure to match the YAML file format
 type Config struct {
 	Package       string                      `yaml:"package"`
