@@ -1,0 +1,54 @@
+package_imports:
+  - fmt
+
+package: vehicle
+importer: driver
+
+custom_types:
+  - name: StringAlias
+    definition: "string"
+    description: "Alias for a standard string"
+
+custom_structs:
+  - name: VehicleStatus
+    description: "Status of the vehicle"
+    fields:
+      - name: Speed
+        type: int
+        description: "Current speed"
+
+interfaces:
+  - name: Vehicle
+    methods:
+      - name: Drive
+        description: "Drives the vehicle"
+        inputs: []
+        outputs:
+          - type: string
+
+      - name: Accelerate
+        description: "Accelerate the vehicle"
+        inputs:
+          - name: amount
+            type: int
+        outputs:
+          - type: int
+          - type: error
+
+  - name: SelfDriving
+    embedded: [Vehicle]
+    methods:
+      - name: AutoDrive
+        description: "Activates autonomous driving"
+        inputs: []
+        outputs:
+          - type: error
+
+implementers:
+  - name: Car
+    implements: ["Vehicle"]
+    description: "A basic car"
+    fields:
+      - name: doors
+        type: int
+        description: "Number of doors"

@@ -12,12 +12,16 @@ func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) 
 
 	import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
 
+// todo create file with this on its own to avoid conflict issue
+type methodConfig[F any] struct {
+	enabled  bool
+	response F
+}
+
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
 {{ range .Methods }}
-	// {{ .Name }} flag and mock response
-	mock{{ title .Name }}     bool
-	{{ .Name }}Response func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}
+	{{ .Name }} methodConfig[func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}]
 {{ end }}
 }
 
@@ -40,11 +44,11 @@ func {{ .MockFactory }}(v {{ .Package }}.{{ .Interface }}) *{{ .MockName }} {
 
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
-	if m.mocked.mock{{ title .Name }} {
+	if m.mocked.{{ title .Name }}.enabled {
 		{{- if gt (len .Outputs) 0 }}
-		return m.mocked.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		return m.mocked.{{ .Name }}.response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 		{{- else }}
-		m.mocked.{{ .Name }}Response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		m.mocked.{{ .Name }}.response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
 		{{- end }}
 	}
 	{{- if gt (len .Outputs) 0 }}
@@ -56,7 +60,7 @@ func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ i
 
 // set{{ title .Name }}Func sets the function for {{ .Name }}
 func (m *{{ $.MockName }}) set{{ title .Name }}Func(f func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
-	m.mocked.{{ .Name }}Response = f
+	m.mocked.{{ .Name }}.response = f
 }
 
 {{ if gt (len .Outputs) 0 }}
@@ -70,12 +74,12 @@ func (m *{{ $.MockName }}) set{{ title .Name }}Response{{ if gt (len .Outputs) 0
 
 // enable{{ title .Name }}Mock turns the mock on
 func (m *{{ $.MockName }}) enable{{ title .Name }}Mock() {
-	m.mocked.mock{{ title .Name }} = true
+	m.mocked.{{ title .Name }}.enabled = true
 }
 
 // disable{{ title .Name }}Mock turns the mock off
 func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
-	m.mocked.mock{{ title .Name }} = false
+	m.mocked.{{ title .Name }}.enabled = false
 }
 {{- end }}
 `
