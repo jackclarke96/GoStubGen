@@ -12,17 +12,11 @@ func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) 
 
 	import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
 
-// todo create file with this on its own to avoid conflict issue
-type methodConfig[F any] struct {
-	enabled  bool
-	response F
-}
-
 // {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
 {{ range .Methods }}
 	{{ .Name }} methodConfig[func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}]
-{{ end }}
+{{- end }}
 }
 
 // {{ .MockName }} embeds a concrete {{ .Interface }} and its mocks

@@ -81,6 +81,11 @@ var generateCmd = &cobra.Command{
 			config.Interfaces[i].Methods = interfaceMethods.FullSets[config.Interfaces[i].Name]
 		}
 
+		// generate mock helpers (common functionality used across test files)
+		if err := generator.GenerateMockHelpers(commonSpec.Importer); err != nil {
+			log.Fatalf("Error generating mock helpers: %v", err)
+		}
+
 		// Generate mocks.
 		for _, i := range config.Interfaces {
 			mockInterfaceSpec := prefixTypesWithPackageName(config, i, commonSpec.Package)
