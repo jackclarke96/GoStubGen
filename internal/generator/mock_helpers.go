@@ -10,9 +10,17 @@ func GenerateMockHelpers(importer string) error {
 	const helpersTemplate = `package {{ .Importer }}
 
 // MethodConfig is a generic container for mocking method behavior.
-type methodConfig[F any] struct {
-	enabled  bool
-	response F
+type methodConfig[T any] struct {
+	mu            sync.Mutex
+	response      T
+	enabled       bool
+	useChannel    bool
+	staticValue   T
+	responseFunc  func() T
+	responseQueue chan func() T
+
+	callCount int
+	callLog   []struct{} // or extend with args, timestamps, etc
 }
 `
 

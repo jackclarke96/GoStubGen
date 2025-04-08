@@ -43,6 +43,13 @@ func (d *Driver) drive() error {
 	return nil
 }
 
+func (d *Driver) setVehicleDriveSelf() error {
+	if sd, ok := d.vehicle.(vehicle.SelfDriving); ok {
+		return sd.DriveSelf("Paris")
+	}
+	return fmt.Errorf("vehicle does not support self-driving")
+}
+
 // more complex driver method involving startup of background routine
 
 // func (d *Driver) soemthing() {

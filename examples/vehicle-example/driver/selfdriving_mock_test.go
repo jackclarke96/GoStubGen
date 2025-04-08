@@ -4,21 +4,21 @@ import "github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
 
 // mockSelfDrivingConfig stores mock flags and responses
 type mockSelfDrivingConfig struct {
+	GetVehicleStatus methodConfig[func() vehicle.VehicleStatus]
+	Reverse          methodConfig[func() (string, error)]
+	ApplyBrakes      methodConfig[func(float64) bool]
+	LoadCargo        methodConfig[func([]string) (int, error)]
+	UpdateStatus     methodConfig[func(vehicle.VehicleStatus) error]
+	Honk             methodConfig[func(int)]
 	GetPassengers    methodConfig[func() []string]
 	Accelerate       methodConfig[func(int, string) (int, error)]
-	Reverse          methodConfig[func() (string, error)]
-	IsMoving         methodConfig[func() bool]
 	Telemetry        methodConfig[func() map[string]float64]
-	GetTopSpeed      methodConfig[func() int]
-	Honk             methodConfig[func(int)]
-	ChangeGears      methodConfig[func(int) (int, int)]
-	UpdateStatus     methodConfig[func(vehicle.VehicleStatus) error]
 	DriveSelf        methodConfig[func(string) error]
-	GetEngineSpecs   methodConfig[func() (int, string)]
-	ApplyBrakes      methodConfig[func(float64) bool]
+	IsMoving         methodConfig[func() bool]
+	GetTopSpeed      methodConfig[func() int]
+	ChangeGears      methodConfig[func(int) (int, int)]
 	Turn             methodConfig[func(string) string]
-	LoadCargo        methodConfig[func([]string) (int, error)]
-	GetVehicleStatus methodConfig[func() vehicle.VehicleStatus]
+	GetEngineSpecs   methodConfig[func() (int, string)]
 }
 
 // mockSelfDriving embeds a concrete SelfDriving and its mocks
@@ -27,76 +27,44 @@ type mockSelfDriving struct {
 	mocked mockSelfDrivingConfig
 }
 
-// selfDrivingMock returns a new mock
-func selfDrivingMock(v vehicle.SelfDriving) *mockSelfDriving {
+// newSelfDrivingMock returns a new mock
+func newSelfDrivingMock(v vehicle.SelfDriving) *mockSelfDriving {
 	return &mockSelfDriving{
 		real:   v,
 		mocked: mockSelfDrivingConfig{},
 	}
 }
 
-/* -------------------------- GetPassengers Mock Helpers --------------------------- */
+/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
 
-// GetPassengers overrides the method to return the mock response
-func (m *mockSelfDriving) GetPassengers() []string {
-	if m.mocked.GetPassengers.enabled {
-		return m.mocked.GetPassengers.response()
+// GetVehicleStatus overrides the method to return the mock response
+func (m *mockSelfDriving) GetVehicleStatus() vehicle.VehicleStatus {
+	if m.mocked.GetVehicleStatus.enabled {
+		return m.mocked.GetVehicleStatus.response()
 	}
-	return m.real.GetPassengers()
+	return m.real.GetVehicleStatus()
 }
 
-// setGetPassengersFunc sets the function for GetPassengers
-func (m *mockSelfDriving) setGetPassengersFunc(f func() []string) {
-	m.mocked.GetPassengers.response = f
+// setGetVehicleStatusFunc sets the function for GetVehicleStatus
+func (m *mockSelfDriving) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.response = f
 }
 
-// setGetPassengersResponse sets the response for GetPassengers
-func (m *mockSelfDriving) setGetPassengersResponse(output0 []string) {
-	m.setGetPassengersFunc(func() []string {
+// enableGetVehicleStatusMock turns the mock on
+func (m *mockSelfDriving) enableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.enabled = true
+}
+
+// disableGetVehicleStatusMock turns the mock off
+func (m *mockSelfDriving) disableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.enabled = false
+}
+
+// setGetVehicleStatusResponse sets the response for GetVehicleStatus
+func (m *mockSelfDriving) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
+	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
 		return output0
 	})
-}
-
-// enableGetPassengersMock turns the mock on
-func (m *mockSelfDriving) enableGetPassengersMock() {
-	m.mocked.GetPassengers.enabled = true
-}
-
-// disableGetPassengersMock turns the mock off
-func (m *mockSelfDriving) disableGetPassengersMock() {
-	m.mocked.GetPassengers.enabled = false
-}
-
-/* -------------------------- Accelerate Mock Helpers --------------------------- */
-
-// Accelerate overrides the method to return the mock response
-func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
-	if m.mocked.Accelerate.enabled {
-		return m.mocked.Accelerate.response(speed, unit)
-	}
-	return m.real.Accelerate(speed, unit)
-}
-
-// setAccelerateFunc sets the function for Accelerate
-func (m *mockSelfDriving) setAccelerateFunc(f func(int, string) (int, error)) {
-	m.mocked.Accelerate.response = f
-}
-
-// setAccelerateResponse sets the response for Accelerate
-func (m *mockSelfDriving) setAccelerateResponse(output0 int, output1 error) {
-	m.setAccelerateFunc(func(int, string) (int, error) {
-		return output0, output1
-	})
-}
-
-// enableAccelerateMock turns the mock on
-func (m *mockSelfDriving) enableAccelerateMock() {
-	m.mocked.Accelerate.enabled = true
-}
-
-// disableAccelerateMock turns the mock off
-func (m *mockSelfDriving) disableAccelerateMock() {
-	m.mocked.Accelerate.enabled = false
 }
 
 /* -------------------------- Reverse Mock Helpers --------------------------- */
@@ -114,13 +82,6 @@ func (m *mockSelfDriving) setReverseFunc(f func() (string, error)) {
 	m.mocked.Reverse.response = f
 }
 
-// setReverseResponse sets the response for Reverse
-func (m *mockSelfDriving) setReverseResponse(output0 string, output1 error) {
-	m.setReverseFunc(func() (string, error) {
-		return output0, output1
-	})
-}
-
 // enableReverseMock turns the mock on
 func (m *mockSelfDriving) enableReverseMock() {
 	m.mocked.Reverse.enabled = true
@@ -131,100 +92,107 @@ func (m *mockSelfDriving) disableReverseMock() {
 	m.mocked.Reverse.enabled = false
 }
 
-/* -------------------------- IsMoving Mock Helpers --------------------------- */
+// setReverseResponse sets the response for Reverse
+func (m *mockSelfDriving) setReverseResponse(output0 string, output1 error) {
+	m.setReverseFunc(func() (string, error) {
+		return output0, output1
+	})
+}
 
-// IsMoving overrides the method to return the mock response
-func (m *mockSelfDriving) IsMoving() bool {
-	if m.mocked.IsMoving.enabled {
-		return m.mocked.IsMoving.response()
+/* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
+
+// ApplyBrakes overrides the method to return the mock response
+func (m *mockSelfDriving) ApplyBrakes(force float64) bool {
+	if m.mocked.ApplyBrakes.enabled {
+		return m.mocked.ApplyBrakes.response(force)
 	}
-	return m.real.IsMoving()
+	return m.real.ApplyBrakes(force)
 }
 
-// setIsMovingFunc sets the function for IsMoving
-func (m *mockSelfDriving) setIsMovingFunc(f func() bool) {
-	m.mocked.IsMoving.response = f
+// setApplyBrakesFunc sets the function for ApplyBrakes
+func (m *mockSelfDriving) setApplyBrakesFunc(f func(float64) bool) {
+	m.mocked.ApplyBrakes.response = f
 }
 
-// setIsMovingResponse sets the response for IsMoving
-func (m *mockSelfDriving) setIsMovingResponse(output0 bool) {
-	m.setIsMovingFunc(func() bool {
+// enableApplyBrakesMock turns the mock on
+func (m *mockSelfDriving) enableApplyBrakesMock() {
+	m.mocked.ApplyBrakes.enabled = true
+}
+
+// disableApplyBrakesMock turns the mock off
+func (m *mockSelfDriving) disableApplyBrakesMock() {
+	m.mocked.ApplyBrakes.enabled = false
+}
+
+// setApplyBrakesResponse sets the response for ApplyBrakes
+func (m *mockSelfDriving) setApplyBrakesResponse(output0 bool) {
+	m.setApplyBrakesFunc(func(float64) bool {
 		return output0
 	})
 }
 
-// enableIsMovingMock turns the mock on
-func (m *mockSelfDriving) enableIsMovingMock() {
-	m.mocked.IsMoving.enabled = true
-}
+/* -------------------------- LoadCargo Mock Helpers --------------------------- */
 
-// disableIsMovingMock turns the mock off
-func (m *mockSelfDriving) disableIsMovingMock() {
-	m.mocked.IsMoving.enabled = false
-}
-
-/* -------------------------- Telemetry Mock Helpers --------------------------- */
-
-// Telemetry overrides the method to return the mock response
-func (m *mockSelfDriving) Telemetry() map[string]float64 {
-	if m.mocked.Telemetry.enabled {
-		return m.mocked.Telemetry.response()
+// LoadCargo overrides the method to return the mock response
+func (m *mockSelfDriving) LoadCargo(items []string) (int, error) {
+	if m.mocked.LoadCargo.enabled {
+		return m.mocked.LoadCargo.response(items)
 	}
-	return m.real.Telemetry()
+	return m.real.LoadCargo(items)
 }
 
-// setTelemetryFunc sets the function for Telemetry
-func (m *mockSelfDriving) setTelemetryFunc(f func() map[string]float64) {
-	m.mocked.Telemetry.response = f
+// setLoadCargoFunc sets the function for LoadCargo
+func (m *mockSelfDriving) setLoadCargoFunc(f func([]string) (int, error)) {
+	m.mocked.LoadCargo.response = f
 }
 
-// setTelemetryResponse sets the response for Telemetry
-func (m *mockSelfDriving) setTelemetryResponse(output0 map[string]float64) {
-	m.setTelemetryFunc(func() map[string]float64 {
-		return output0
+// enableLoadCargoMock turns the mock on
+func (m *mockSelfDriving) enableLoadCargoMock() {
+	m.mocked.LoadCargo.enabled = true
+}
+
+// disableLoadCargoMock turns the mock off
+func (m *mockSelfDriving) disableLoadCargoMock() {
+	m.mocked.LoadCargo.enabled = false
+}
+
+// setLoadCargoResponse sets the response for LoadCargo
+func (m *mockSelfDriving) setLoadCargoResponse(output0 int, output1 error) {
+	m.setLoadCargoFunc(func([]string) (int, error) {
+		return output0, output1
 	})
 }
 
-// enableTelemetryMock turns the mock on
-func (m *mockSelfDriving) enableTelemetryMock() {
-	m.mocked.Telemetry.enabled = true
-}
+/* -------------------------- UpdateStatus Mock Helpers --------------------------- */
 
-// disableTelemetryMock turns the mock off
-func (m *mockSelfDriving) disableTelemetryMock() {
-	m.mocked.Telemetry.enabled = false
-}
-
-/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
-
-// GetTopSpeed overrides the method to return the mock response
-func (m *mockSelfDriving) GetTopSpeed() int {
-	if m.mocked.GetTopSpeed.enabled {
-		return m.mocked.GetTopSpeed.response()
+// UpdateStatus overrides the method to return the mock response
+func (m *mockSelfDriving) UpdateStatus(status vehicle.VehicleStatus) error {
+	if m.mocked.UpdateStatus.enabled {
+		return m.mocked.UpdateStatus.response(status)
 	}
-	return m.real.GetTopSpeed()
+	return m.real.UpdateStatus(status)
 }
 
-// setGetTopSpeedFunc sets the function for GetTopSpeed
-func (m *mockSelfDriving) setGetTopSpeedFunc(f func() int) {
-	m.mocked.GetTopSpeed.response = f
+// setUpdateStatusFunc sets the function for UpdateStatus
+func (m *mockSelfDriving) setUpdateStatusFunc(f func(vehicle.VehicleStatus) error) {
+	m.mocked.UpdateStatus.response = f
 }
 
-// setGetTopSpeedResponse sets the response for GetTopSpeed
-func (m *mockSelfDriving) setGetTopSpeedResponse(output0 int) {
-	m.setGetTopSpeedFunc(func() int {
+// enableUpdateStatusMock turns the mock on
+func (m *mockSelfDriving) enableUpdateStatusMock() {
+	m.mocked.UpdateStatus.enabled = true
+}
+
+// disableUpdateStatusMock turns the mock off
+func (m *mockSelfDriving) disableUpdateStatusMock() {
+	m.mocked.UpdateStatus.enabled = false
+}
+
+// setUpdateStatusResponse sets the response for UpdateStatus
+func (m *mockSelfDriving) setUpdateStatusResponse(output0 error) {
+	m.setUpdateStatusFunc(func(vehicle.VehicleStatus) error {
 		return output0
 	})
-}
-
-// enableGetTopSpeedMock turns the mock on
-func (m *mockSelfDriving) enableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.enabled = true
-}
-
-// disableGetTopSpeedMock turns the mock off
-func (m *mockSelfDriving) disableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.enabled = false
 }
 
 /* -------------------------- Honk Mock Helpers --------------------------- */
@@ -252,68 +220,100 @@ func (m *mockSelfDriving) disableHonkMock() {
 	m.mocked.Honk.enabled = false
 }
 
-/* -------------------------- ChangeGears Mock Helpers --------------------------- */
+/* -------------------------- GetPassengers Mock Helpers --------------------------- */
 
-// ChangeGears overrides the method to return the mock response
-func (m *mockSelfDriving) ChangeGears(gear int) (int, int) {
-	if m.mocked.ChangeGears.enabled {
-		return m.mocked.ChangeGears.response(gear)
+// GetPassengers overrides the method to return the mock response
+func (m *mockSelfDriving) GetPassengers() []string {
+	if m.mocked.GetPassengers.enabled {
+		return m.mocked.GetPassengers.response()
 	}
-	return m.real.ChangeGears(gear)
+	return m.real.GetPassengers()
 }
 
-// setChangeGearsFunc sets the function for ChangeGears
-func (m *mockSelfDriving) setChangeGearsFunc(f func(int) (int, int)) {
-	m.mocked.ChangeGears.response = f
+// setGetPassengersFunc sets the function for GetPassengers
+func (m *mockSelfDriving) setGetPassengersFunc(f func() []string) {
+	m.mocked.GetPassengers.response = f
 }
 
-// setChangeGearsResponse sets the response for ChangeGears
-func (m *mockSelfDriving) setChangeGearsResponse(output0 int, output1 int) {
-	m.setChangeGearsFunc(func(int) (int, int) {
-		return output0, output1
-	})
+// enableGetPassengersMock turns the mock on
+func (m *mockSelfDriving) enableGetPassengersMock() {
+	m.mocked.GetPassengers.enabled = true
 }
 
-// enableChangeGearsMock turns the mock on
-func (m *mockSelfDriving) enableChangeGearsMock() {
-	m.mocked.ChangeGears.enabled = true
+// disableGetPassengersMock turns the mock off
+func (m *mockSelfDriving) disableGetPassengersMock() {
+	m.mocked.GetPassengers.enabled = false
 }
 
-// disableChangeGearsMock turns the mock off
-func (m *mockSelfDriving) disableChangeGearsMock() {
-	m.mocked.ChangeGears.enabled = false
-}
-
-/* -------------------------- UpdateStatus Mock Helpers --------------------------- */
-
-// UpdateStatus overrides the method to return the mock response
-func (m *mockSelfDriving) UpdateStatus(status vehicle.VehicleStatus) error {
-	if m.mocked.UpdateStatus.enabled {
-		return m.mocked.UpdateStatus.response(status)
-	}
-	return m.real.UpdateStatus(status)
-}
-
-// setUpdateStatusFunc sets the function for UpdateStatus
-func (m *mockSelfDriving) setUpdateStatusFunc(f func(vehicle.VehicleStatus) error) {
-	m.mocked.UpdateStatus.response = f
-}
-
-// setUpdateStatusResponse sets the response for UpdateStatus
-func (m *mockSelfDriving) setUpdateStatusResponse(output0 error) {
-	m.setUpdateStatusFunc(func(vehicle.VehicleStatus) error {
+// setGetPassengersResponse sets the response for GetPassengers
+func (m *mockSelfDriving) setGetPassengersResponse(output0 []string) {
+	m.setGetPassengersFunc(func() []string {
 		return output0
 	})
 }
 
-// enableUpdateStatusMock turns the mock on
-func (m *mockSelfDriving) enableUpdateStatusMock() {
-	m.mocked.UpdateStatus.enabled = true
+/* -------------------------- Accelerate Mock Helpers --------------------------- */
+
+// Accelerate overrides the method to return the mock response
+func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
+	if m.mocked.Accelerate.enabled {
+		return m.mocked.Accelerate.response(speed, unit)
+	}
+	return m.real.Accelerate(speed, unit)
 }
 
-// disableUpdateStatusMock turns the mock off
-func (m *mockSelfDriving) disableUpdateStatusMock() {
-	m.mocked.UpdateStatus.enabled = false
+// setAccelerateFunc sets the function for Accelerate
+func (m *mockSelfDriving) setAccelerateFunc(f func(int, string) (int, error)) {
+	m.mocked.Accelerate.response = f
+}
+
+// enableAccelerateMock turns the mock on
+func (m *mockSelfDriving) enableAccelerateMock() {
+	m.mocked.Accelerate.enabled = true
+}
+
+// disableAccelerateMock turns the mock off
+func (m *mockSelfDriving) disableAccelerateMock() {
+	m.mocked.Accelerate.enabled = false
+}
+
+// setAccelerateResponse sets the response for Accelerate
+func (m *mockSelfDriving) setAccelerateResponse(output0 int, output1 error) {
+	m.setAccelerateFunc(func(int, string) (int, error) {
+		return output0, output1
+	})
+}
+
+/* -------------------------- Telemetry Mock Helpers --------------------------- */
+
+// Telemetry overrides the method to return the mock response
+func (m *mockSelfDriving) Telemetry() map[string]float64 {
+	if m.mocked.Telemetry.enabled {
+		return m.mocked.Telemetry.response()
+	}
+	return m.real.Telemetry()
+}
+
+// setTelemetryFunc sets the function for Telemetry
+func (m *mockSelfDriving) setTelemetryFunc(f func() map[string]float64) {
+	m.mocked.Telemetry.response = f
+}
+
+// enableTelemetryMock turns the mock on
+func (m *mockSelfDriving) enableTelemetryMock() {
+	m.mocked.Telemetry.enabled = true
+}
+
+// disableTelemetryMock turns the mock off
+func (m *mockSelfDriving) disableTelemetryMock() {
+	m.mocked.Telemetry.enabled = false
+}
+
+// setTelemetryResponse sets the response for Telemetry
+func (m *mockSelfDriving) setTelemetryResponse(output0 map[string]float64) {
+	m.setTelemetryFunc(func() map[string]float64 {
+		return output0
+	})
 }
 
 /* -------------------------- DriveSelf Mock Helpers --------------------------- */
@@ -331,13 +331,6 @@ func (m *mockSelfDriving) setDriveSelfFunc(f func(string) error) {
 	m.mocked.DriveSelf.response = f
 }
 
-// setDriveSelfResponse sets the response for DriveSelf
-func (m *mockSelfDriving) setDriveSelfResponse(output0 error) {
-	m.setDriveSelfFunc(func(string) error {
-		return output0
-	})
-}
-
 // enableDriveSelfMock turns the mock on
 func (m *mockSelfDriving) enableDriveSelfMock() {
 	m.mocked.DriveSelf.enabled = true
@@ -348,68 +341,107 @@ func (m *mockSelfDriving) disableDriveSelfMock() {
 	m.mocked.DriveSelf.enabled = false
 }
 
-/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
-
-// GetEngineSpecs overrides the method to return the mock response
-func (m *mockSelfDriving) GetEngineSpecs() (int, string) {
-	if m.mocked.GetEngineSpecs.enabled {
-		return m.mocked.GetEngineSpecs.response()
-	}
-	return m.real.GetEngineSpecs()
-}
-
-// setGetEngineSpecsFunc sets the function for GetEngineSpecs
-func (m *mockSelfDriving) setGetEngineSpecsFunc(f func() (int, string)) {
-	m.mocked.GetEngineSpecs.response = f
-}
-
-// setGetEngineSpecsResponse sets the response for GetEngineSpecs
-func (m *mockSelfDriving) setGetEngineSpecsResponse(output0 int, output1 string) {
-	m.setGetEngineSpecsFunc(func() (int, string) {
-		return output0, output1
-	})
-}
-
-// enableGetEngineSpecsMock turns the mock on
-func (m *mockSelfDriving) enableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.enabled = true
-}
-
-// disableGetEngineSpecsMock turns the mock off
-func (m *mockSelfDriving) disableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.enabled = false
-}
-
-/* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
-
-// ApplyBrakes overrides the method to return the mock response
-func (m *mockSelfDriving) ApplyBrakes(force float64) bool {
-	if m.mocked.ApplyBrakes.enabled {
-		return m.mocked.ApplyBrakes.response(force)
-	}
-	return m.real.ApplyBrakes(force)
-}
-
-// setApplyBrakesFunc sets the function for ApplyBrakes
-func (m *mockSelfDriving) setApplyBrakesFunc(f func(float64) bool) {
-	m.mocked.ApplyBrakes.response = f
-}
-
-// setApplyBrakesResponse sets the response for ApplyBrakes
-func (m *mockSelfDriving) setApplyBrakesResponse(output0 bool) {
-	m.setApplyBrakesFunc(func(float64) bool {
+// setDriveSelfResponse sets the response for DriveSelf
+func (m *mockSelfDriving) setDriveSelfResponse(output0 error) {
+	m.setDriveSelfFunc(func(string) error {
 		return output0
 	})
 }
 
-// enableApplyBrakesMock turns the mock on
-func (m *mockSelfDriving) enableApplyBrakesMock() {
-	m.mocked.ApplyBrakes.enabled = true
+/* -------------------------- IsMoving Mock Helpers --------------------------- */
+
+// IsMoving overrides the method to return the mock response
+func (m *mockSelfDriving) IsMoving() bool {
+	if m.mocked.IsMoving.enabled {
+		return m.mocked.IsMoving.response()
+	}
+	return m.real.IsMoving()
 }
 
-// disableApplyBrakesMock turns the mock off
-func (m *mockSelfDriving) disableApplyBrakesMock() {
-	m.mocked.ApplyBrakes.enabled = false
+// setIsMovingFunc sets the function for IsMoving
+func (m *mockSelfDriving) setIsMovingFunc(f func() bool) {
+	m.mocked.IsMoving.response = f
+}
+
+// enableIsMovingMock turns the mock on
+func (m *mockSelfDriving) enableIsMovingMock() {
+	m.mocked.IsMoving.enabled = true
+}
+
+// disableIsMovingMock turns the mock off
+func (m *mockSelfDriving) disableIsMovingMock() {
+	m.mocked.IsMoving.enabled = false
+}
+
+// setIsMovingResponse sets the response for IsMoving
+func (m *mockSelfDriving) setIsMovingResponse(output0 bool) {
+	m.setIsMovingFunc(func() bool {
+		return output0
+	})
+}
+
+/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
+
+// GetTopSpeed overrides the method to return the mock response
+func (m *mockSelfDriving) GetTopSpeed() int {
+	if m.mocked.GetTopSpeed.enabled {
+		return m.mocked.GetTopSpeed.response()
+	}
+	return m.real.GetTopSpeed()
+}
+
+// setGetTopSpeedFunc sets the function for GetTopSpeed
+func (m *mockSelfDriving) setGetTopSpeedFunc(f func() int) {
+	m.mocked.GetTopSpeed.response = f
+}
+
+// enableGetTopSpeedMock turns the mock on
+func (m *mockSelfDriving) enableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.enabled = true
+}
+
+// disableGetTopSpeedMock turns the mock off
+func (m *mockSelfDriving) disableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.enabled = false
+}
+
+// setGetTopSpeedResponse sets the response for GetTopSpeed
+func (m *mockSelfDriving) setGetTopSpeedResponse(output0 int) {
+	m.setGetTopSpeedFunc(func() int {
+		return output0
+	})
+}
+
+/* -------------------------- ChangeGears Mock Helpers --------------------------- */
+
+// ChangeGears overrides the method to return the mock response
+func (m *mockSelfDriving) ChangeGears(gear int) (int, int) {
+	if m.mocked.ChangeGears.enabled {
+		return m.mocked.ChangeGears.response(gear)
+	}
+	return m.real.ChangeGears(gear)
+}
+
+// setChangeGearsFunc sets the function for ChangeGears
+func (m *mockSelfDriving) setChangeGearsFunc(f func(int) (int, int)) {
+	m.mocked.ChangeGears.response = f
+}
+
+// enableChangeGearsMock turns the mock on
+func (m *mockSelfDriving) enableChangeGearsMock() {
+	m.mocked.ChangeGears.enabled = true
+}
+
+// disableChangeGearsMock turns the mock off
+func (m *mockSelfDriving) disableChangeGearsMock() {
+	m.mocked.ChangeGears.enabled = false
+}
+
+// setChangeGearsResponse sets the response for ChangeGears
+func (m *mockSelfDriving) setChangeGearsResponse(output0 int, output1 int) {
+	m.setChangeGearsFunc(func(int) (int, int) {
+		return output0, output1
+	})
 }
 
 /* -------------------------- Turn Mock Helpers --------------------------- */
@@ -427,13 +459,6 @@ func (m *mockSelfDriving) setTurnFunc(f func(string) string) {
 	m.mocked.Turn.response = f
 }
 
-// setTurnResponse sets the response for Turn
-func (m *mockSelfDriving) setTurnResponse(output0 string) {
-	m.setTurnFunc(func(string) string {
-		return output0
-	})
-}
-
 // enableTurnMock turns the mock on
 func (m *mockSelfDriving) enableTurnMock() {
 	m.mocked.Turn.enabled = true
@@ -444,66 +469,41 @@ func (m *mockSelfDriving) disableTurnMock() {
 	m.mocked.Turn.enabled = false
 }
 
-/* -------------------------- LoadCargo Mock Helpers --------------------------- */
-
-// LoadCargo overrides the method to return the mock response
-func (m *mockSelfDriving) LoadCargo(items []string) (int, error) {
-	if m.mocked.LoadCargo.enabled {
-		return m.mocked.LoadCargo.response(items)
-	}
-	return m.real.LoadCargo(items)
-}
-
-// setLoadCargoFunc sets the function for LoadCargo
-func (m *mockSelfDriving) setLoadCargoFunc(f func([]string) (int, error)) {
-	m.mocked.LoadCargo.response = f
-}
-
-// setLoadCargoResponse sets the response for LoadCargo
-func (m *mockSelfDriving) setLoadCargoResponse(output0 int, output1 error) {
-	m.setLoadCargoFunc(func([]string) (int, error) {
-		return output0, output1
-	})
-}
-
-// enableLoadCargoMock turns the mock on
-func (m *mockSelfDriving) enableLoadCargoMock() {
-	m.mocked.LoadCargo.enabled = true
-}
-
-// disableLoadCargoMock turns the mock off
-func (m *mockSelfDriving) disableLoadCargoMock() {
-	m.mocked.LoadCargo.enabled = false
-}
-
-/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
-
-// GetVehicleStatus overrides the method to return the mock response
-func (m *mockSelfDriving) GetVehicleStatus() vehicle.VehicleStatus {
-	if m.mocked.GetVehicleStatus.enabled {
-		return m.mocked.GetVehicleStatus.response()
-	}
-	return m.real.GetVehicleStatus()
-}
-
-// setGetVehicleStatusFunc sets the function for GetVehicleStatus
-func (m *mockSelfDriving) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
-	m.mocked.GetVehicleStatus.response = f
-}
-
-// setGetVehicleStatusResponse sets the response for GetVehicleStatus
-func (m *mockSelfDriving) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
-	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
+// setTurnResponse sets the response for Turn
+func (m *mockSelfDriving) setTurnResponse(output0 string) {
+	m.setTurnFunc(func(string) string {
 		return output0
 	})
 }
 
-// enableGetVehicleStatusMock turns the mock on
-func (m *mockSelfDriving) enableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.enabled = true
+/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
+
+// GetEngineSpecs overrides the method to return the mock response
+func (m *mockSelfDriving) GetEngineSpecs() (int, string) {
+	if m.mocked.GetEngineSpecs.enabled {
+		return m.mocked.GetEngineSpecs.response()
+	}
+	return m.real.GetEngineSpecs()
 }
 
-// disableGetVehicleStatusMock turns the mock off
-func (m *mockSelfDriving) disableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.enabled = false
+// setGetEngineSpecsFunc sets the function for GetEngineSpecs
+func (m *mockSelfDriving) setGetEngineSpecsFunc(f func() (int, string)) {
+	m.mocked.GetEngineSpecs.response = f
+}
+
+// enableGetEngineSpecsMock turns the mock on
+func (m *mockSelfDriving) enableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.enabled = true
+}
+
+// disableGetEngineSpecsMock turns the mock off
+func (m *mockSelfDriving) disableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.enabled = false
+}
+
+// setGetEngineSpecsResponse sets the response for GetEngineSpecs
+func (m *mockSelfDriving) setGetEngineSpecsResponse(output0 int, output1 string) {
+	m.setGetEngineSpecsFunc(func() (int, string) {
+		return output0, output1
+	})
 }

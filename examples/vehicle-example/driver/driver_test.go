@@ -11,7 +11,7 @@ import (
 func TestDriverDriveWithMock(t *testing.T) {
 
 	// Create a new mock vehicle.
-	mockVeh := vehicleMock(vehicle.NewCar())
+	mockVeh := newVehicleMock(vehicle.NewCar())
 
 	// Inject the mock vehicle into the Driver.
 	d := NewDriver(WithVehicle(mockVeh))
@@ -28,10 +28,11 @@ func TestDriverDriveWithMock(t *testing.T) {
 	}
 }
 
+// Future Car embeds car so should inherit methods and therefore work with newVehiclemock
 func TestDriverDriveWithMockFunc(t *testing.T) {
 
 	// Create a new mock vehicle.
-	mockVeh := vehicleMock(vehicle.NewCar())
+	mockVeh := newVehicleMock(vehicle.NewRoboCar())
 
 	// Inject the mock vehicle into the Driver.
 	d := NewDriver(WithVehicle(mockVeh))
@@ -47,4 +48,32 @@ func TestDriverDriveWithMockFunc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Did not expect an error. Got %s", err)
 	}
+}
+
+// Future Car embeds car so should inherit methods and therefore work with newVehiclemock
+func TestSelfDriverMethod(t *testing.T) {
+
+	// Create a new mock vehicle.
+	mockVeh := newSelfDrivingMock(vehicle.NewRoboCar())
+
+	// Inject the mock vehicle into the Driver.
+	d := NewDriver(WithVehicle(mockVeh))
+
+	// Set up the expected behavior for DriveSelf:
+	mockVeh.enableDriveSelfMock()
+	mockVeh.setDriveSelfResponse(errors.New("mock error oh no!"))
+
+	// Call the driver's drive method which uses DriveSelf.
+	err := d.setVehicleDriveSelf()
+	if err == nil {
+		t.Fatal("expected an error!")
+	}
+
+	// disable and test again
+	mockVeh.disableDriveSelfMock()
+	err = d.setVehicleDriveSelf()
+	if err != nil {
+		t.Fatalf("did not expect an error! got %s", err)
+	}
+
 }

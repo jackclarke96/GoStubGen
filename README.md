@@ -9,6 +9,7 @@ generated package includes:
 - Interface definitions
 - Concrete implementations
 - Mocking framework for unit testing
+- Support for embedded interfaces and structs
 
 Designed for integration into a parent package using the dependency injection
 pattern, GoStubGen ensures full control over injected dependencies, making unit
@@ -33,7 +34,95 @@ go mod vendor
 
 ## Usage
 
+TODO example and split up yaml spec
+
 ### YAML Spec
+
+For each interface and struct defined, the generator will take the "embeds" and
+"implements" field values to calculate the minimum set of methods a struct
+requires in order to implement a set of interfaces.
+
+#### Example: Interface Inheritance
+
+```yaml
+interfaces:
+  - name: Vehicle
+    methods:
+      - name: Drive
+        outputs:
+          - type: string
+
+  - name: Car
+    embeds: [Vehicle]
+    methods:
+      - name: OpenTrunk
+        outputs:
+          - type: error
+```
+
+The Car interface now requires:
+
+- `Drive()` from Vehicle
+- `OpenTrunk()` from itself
+
+```go
+type Car interface {
+	Vehicle
+	OpenTrunk() error
+}
+```
+
+#### Example: Struct Implements Combined Interfaces
+
+```yaml
+implementers:
+  - name: Sedan
+    implements: [Car]
+    fields:
+      - name: color
+        type: string
+```
+
+The generator knows Sedan must implement:
+
+- `Drive()` string
+- `OpenTrunk()` error
+
+```go
+func (s *Sedan) Drive() string     { return "" }
+func (s *Sedan) OpenTrunk() error  { return nil }
+```
+
+#### Example: Struct Implements Combined Interfaces and also embeds Struct
+
+```yaml
+interfaces:
+  - name: SelfDriving
+    embeds: [Car]
+    methods:
+      - name: ActivateAutopilot
+        outputs:
+          - type: error
+
+implementers:
+  - name: RoboCar
+    implements: [SelfDriving]
+    embeds: [Sedan]
+    fields:
+      - name: aiVersion
+        type: string
+```
+
+then `RoboCar` must implement only the unique method:
+
+- `ActivateAutopilot() error`
+
+Because it embeds Sedan, which already provides:
+
+- `Drive() string`
+- `OpenTrunk() error`
+
+#### Full YAML example
 
 ```yaml
 package_imports: # List of package imports
@@ -43,28 +132,38 @@ package_imports: # List of package imports
 package: <package_name> # The package name for the generated files
 importer: <importer_package> # The package that will import this package
 
-implementers:
-  - name: <StructName>
-    description: "Description of the struct"
-    fields:
-      - name: <FieldName>
-        type: <FieldType>
-
+# Custom Structs are optional. Reusable types used in method signatures or within interfaces.
 custom_structs: # Optional, defines additional custom structs
   - name: <StructName>
+    description: "Destription of the struct" # will appear as comment
+    fields:
+      - name: <FieldName>
+        description: "Description of the field" # will appear as comment
+        type: <FieldType>
+
+
+# Each interface can include methods and embed other interfaces.
+name: <InterfaceName> # The name of the interface to generate
+  embedded: ["<other interfaces>"]
+  description: "Interface description" # will appear as comment
+  methods:
+    - name: <MethodName>
+      description: "Description of method" # will appear as comment
+      inputs: # omit for methods with none
+        - name: <ParamName>
+          type: <ParamType>
+      outputs: # omit for methods with none
+        - type: <ReturnType>
+
+# Implementers declare concrete structs that implement one or more interfaces.
+implementers:
+  - name: <StructName>
+    description: "Description of the struct" # will appear as comment
+    embedded: ["<other structs>"]
+    implements: ["<list of interfaces>"]
     fields:
       - name: <FieldName>
         type: <FieldType>
-
-name: <InterfaceName> # The name of the interface to generate
-methods:
-  - name: <MethodName>
-    description: "Description of method"
-    inputs:
-      - name: <ParamName>
-        type: <ParamType>
-    outputs:
-      - type: <ReturnType>
 ```
 
 ### Generating Code
@@ -89,6 +188,8 @@ will generate the following files:
 - **`vehicle/custom_types.go`** – Provides dependency injection setup.
 - **`importer/vehicle_mock_test.go`** – Generates a mock implementation for unit
   testing.
+- **`importer/self_driving_mocktest.go`** - Generates another mock
+  implementation for unit testing
 
 These files allow for easy integration into a larger Go project with dependency
 injection support.
@@ -148,7 +249,7 @@ import (
 
 func TestDriverDriveWithMock(t *testing.T) {
     // Create a mock of a Car (which implements Vehicle)
-    mockVeh := vehicleMock(vehicle.NewCar())
+    mockVeh := newVehicleMock(vehicle.NewCar())
     // inject mock Vehicle into driver
     d := driver.NewDriver(driver.WithVehicle(mockVeh))
     // Mock the LoadCargo method to return an error

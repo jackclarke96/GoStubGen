@@ -2,82 +2,95 @@ package generator
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"text/template"
 )
 
-func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
-	const mockTemplate = `package {{ .Importer }}
-
-	import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
-
-// {{ .MockConfigName }} stores mock flags and responses
+func generateMethodConfig() string {
+	return `// {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
 {{ range .Methods }}
 	{{ .Name }} methodConfig[func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}]
 {{- end }}
+}`
 }
 
-// {{ .MockName }} embeds a concrete {{ .Interface }} and its mocks
+func generateMockStruct() string {
+	return `// {{ .MockName }} embeds a concrete {{ .Interface }} and its mocks
 type {{ .MockName }} struct {
 	real   {{ .Package }}.{{ .Interface }}
 	mocked {{ .MockConfigName }}
+}`
 }
 
-// {{ .MockFactory }} returns a new mock
+func generateFactoryFunc() string {
+	return `// {{ .MockFactory }} returns a new mock
 func {{ .MockFactory }}(v {{ .Package }}.{{ .Interface }}) *{{ .MockName }} {
 	return &{{ .MockName }}{
 		real:   v,
 		mocked: {{ .MockConfigName }}{},
 	}
+}`
 }
 
-{{- range .Methods }}
+const methodDividerTemplate = `
 /* -------------------------- {{ .Name }} Mock Helpers --------------------------- */
+`
 
+const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
-func (m *{{ $.MockName }}) {{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }} {{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
+func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
 	if m.mocked.{{ title .Name }}.enabled {
 		{{- if gt (len .Outputs) 0 }}
-		return m.mocked.{{ .Name }}.response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		return m.mocked.{{ .Name }}.response({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 		{{- else }}
-		m.mocked.{{ .Name }}.response({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+		m.mocked.{{ .Name }}.response({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 		{{- end }}
 	}
 	{{- if gt (len .Outputs) 0 }}
-	return m.real.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+	return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 	{{- else }}
-	m.real.{{ .Name }}({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Name }}{{ end }})
+	m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 	{{- end }}
-}
+}`
 
+const setFuncTemplate = `
 // set{{ title .Name }}Func sets the function for {{ .Name }}
-func (m *{{ $.MockName }}) set{{ title .Name }}Func(f func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}) {
+func (m *{{ .MockName }}) set{{ title .Name }}Func(f {{ responseSignature .Inputs .Outputs }}) {
 	m.mocked.{{ .Name }}.response = f
-}
+}`
 
-{{ if gt (len .Outputs) 0 }}
+const setResponseTemplate = `
 // set{{ title .Name }}Response sets the response for {{ .Name }}
-func (m *{{ $.MockName }}) set{{ title .Name }}Response{{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}output{{ $index }} {{ $param.Type }}{{ end }}){{ end }} {
-	m.set{{ .Name }}Func(func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }} {
-		return {{ if gt (len .Outputs) 0 }}{{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}output{{ $index }}{{ end }}{{ end }}
+func (m *{{ .MockName }}) set{{ title .Name }}Response({{ range $i, $p := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }} {{ $p.Type }}{{ end }}) {
+	m.set{{ title .Name }}Func(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
+		return {{ range $i, $p := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }}{{ end }}
 	})
-}
-{{ end }}
+}`
 
+const enableTemplate = `
 // enable{{ title .Name }}Mock turns the mock on
-func (m *{{ $.MockName }}) enable{{ title .Name }}Mock() {
+func (m *{{ .MockName }}) enable{{ title .Name }}Mock() {
 	m.mocked.{{ title .Name }}.enabled = true
-}
+}`
 
+const disableTemplate = `
 // disable{{ title .Name }}Mock turns the mock off
-func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
+func (m *{{ .MockName }}) disable{{ title .Name }}Mock() {
 	m.mocked.{{ title .Name }}.enabled = false
-}
-{{- end }}
-`
+}`
 
+func writeTemplate(w io.Writer, tmplStr string, data any, funcs template.FuncMap) error {
+	tmpl, err := template.New("").Funcs(funcs).Parse(tmplStr)
+	if err != nil {
+		return err
+	}
+	return tmpl.Execute(w, data)
+}
+
+func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) error {
 	if err := os.MkdirAll("generated/importer", os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create 'generated' directory: %w", err)
 	}
@@ -89,16 +102,47 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 	}
 	defer file.Close()
 
-	tmpl, err := template.New("mock").Funcs(template.FuncMap{
+	funcs := template.FuncMap{
 		"title": func(s string) string {
 			return strings.Title(s)
 		},
-	}).Parse(mockTemplate)
-	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
+		"responseSignature": func(inputs, outputs []Param) string {
+			var b strings.Builder
+			b.WriteString("func(")
+			for i, in := range inputs {
+				if i > 0 {
+					b.WriteString(", ")
+				}
+				b.WriteString(in.Type)
+			}
+			b.WriteString(")")
+			if len(outputs) > 0 {
+				b.WriteString(" (")
+				for i, out := range outputs {
+					if i > 0 {
+						b.WriteString(", ")
+					}
+					b.WriteString(out.Type)
+				}
+				b.WriteString(")")
+			}
+			return b.String()
+		},
 	}
 
-	return tmpl.Execute(file, struct {
+	headerTemplate := `package {{ .Importer }}
+
+import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
+
+` + generateMethodConfig() + "\n\n" + generateMockStruct() + "\n\n" + generateFactoryFunc() + "\n"
+
+	// Write the header section
+	tmpl, err := template.New("header").Funcs(funcs).Parse(headerTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse header template: %w", err)
+	}
+
+	err = tmpl.Execute(file, struct {
 		Interface      string
 		Concrete       string
 		MockName       string
@@ -117,4 +161,38 @@ func (m *{{ $.MockName }}) disable{{ title .Name }}Mock() {
 		Package:        common.Package,
 		Importer:       common.Importer,
 	})
+	if err != nil {
+		return fmt.Errorf("failed to write header: %w", err)
+	}
+
+	// Write method-specific helper functions
+	for _, method := range spec.Methods {
+		data := struct {
+			MockName string
+			Name     string
+			Inputs   []Param
+			Outputs  []Param
+		}{
+			MockName: fmt.Sprintf("mock%s", spec.Name),
+			Name:     method.Name,
+			Inputs:   method.Inputs,
+			Outputs:  method.Outputs,
+		}
+
+		if err := writeTemplate(file, methodDividerTemplate, data, funcs); err != nil {
+			return err
+		}
+		for _, tmplStr := range []string{methodOverrideTemplate, setFuncTemplate, enableTemplate, disableTemplate} {
+			if err := writeTemplate(file, tmplStr, data, funcs); err != nil {
+				return err
+			}
+		}
+		if len(method.Outputs) > 0 {
+			if err := writeTemplate(file, setResponseTemplate, data, funcs); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
