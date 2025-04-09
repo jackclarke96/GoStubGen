@@ -1,5 +1,6 @@
 package generator
 
+//todo add spy. add queue with locking
 import (
 	"fmt"
 	"io"
@@ -42,11 +43,16 @@ const methodDividerTemplate = `
 const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
-	if m.mocked.{{ title .Name }}.enabled {
+	if m.mocked.{{ title .Name }}.Enabled {
 		{{- if gt (len .Outputs) 0 }}
-		return m.mocked.{{ .Name }}.response({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		return m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
+			return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		})({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 		{{- else }}
-		m.mocked.{{ .Name }}.response({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) {
+			m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		})({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		return
 		{{- end }}
 	}
 	{{- if gt (len .Outputs) 0 }}
@@ -59,7 +65,7 @@ func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, 
 const setFuncTemplate = `
 // set{{ title .Name }}Func sets the function for {{ .Name }}
 func (m *{{ .MockName }}) set{{ title .Name }}Func(f {{ responseSignature .Inputs .Outputs }}) {
-	m.mocked.{{ .Name }}.response = f
+	m.mocked.{{ .Name }}.Fallback = f
 }`
 
 const setResponseTemplate = `
@@ -80,6 +86,35 @@ const disableTemplate = `
 // disable{{ title .Name }}Mock turns the mock off
 func (m *{{ .MockName }}) disable{{ title .Name }}Mock() {
 	m.mocked.{{ title .Name }}.enabled = false
+}`
+
+const enqueueFuncTemplate = `
+// enqueue{{ title .Name }}ResponseFunc enqueues a function response for {{ .Name }}
+func (m *{{ .MockName }}) enqueue{{ title .Name }}ResponseFunc(f {{ responseSignature .Inputs .Outputs }}) {
+	m.mocked.{{ .Name }}.EnqueueWithDelay(f, 0)
+}`
+
+const enqueueFuncWithDelayTemplate = `
+// enqueue{{ title .Name }}ResponseFuncWithDelay enqueues a function response with delay for {{ .Name }}
+func (m *{{ .MockName }}) enqueue{{ title .Name }}ResponseFuncWithDelay(f {{ responseSignature .Inputs .Outputs }}, d time.Duration) {
+	m.mocked.{{ .Name }}.EnqueueWithDelay(f, d)
+}`
+
+const enqueueStaticTemplate = `
+// enqueue{{ title .Name }}Response enqueues a static response for {{ .Name }}
+func (m *{{ .MockName }}) enqueue{{ title .Name }}Response({{ range $i, $p := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }} {{ $p.Type }}{{ end }}) {
+	m.mocked.{{ .Name }}.EnqueueWithDelay(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
+		return {{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }}{{ end }}
+	}, 0)
+}`
+
+const enqueueStaticWithDelayTemplate = `
+// enqueue{{ title .Name }}ResponseWithDelay enqueues a static response with delay for {{ .Name }}
+func (m *{{ .MockName }}) enqueue{{ title .Name }}ResponseWithDelay({{ range $i, $p := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }} {{ $p.Type }}{{ end }}, d time.Duration) {
+	m.mocked.{{ .Name }}.EnqueueWithDelay(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
+		time.Sleep(d)
+		return {{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}output{{ $i }}{{ end }}
+	}, d)
 }`
 
 func writeTemplate(w io.Writer, tmplStr string, data any, funcs template.FuncMap) error {
@@ -182,16 +217,33 @@ import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
 		if err := writeTemplate(file, methodDividerTemplate, data, funcs); err != nil {
 			return err
 		}
-		for _, tmplStr := range []string{methodOverrideTemplate, setFuncTemplate, enableTemplate, disableTemplate} {
+		// Always generate core + function enqueue templates
+		for _, tmplStr := range []string{
+			methodOverrideTemplate,
+			setFuncTemplate,
+			enableTemplate,
+			disableTemplate,
+			enqueueFuncTemplate,
+			enqueueFuncWithDelayTemplate,
+		} {
 			if err := writeTemplate(file, tmplStr, data, funcs); err != nil {
 				return err
 			}
 		}
+
+		// Only generate static response-based templates for methods with outputs
 		if len(method.Outputs) > 0 {
-			if err := writeTemplate(file, setResponseTemplate, data, funcs); err != nil {
-				return err
+			for _, tmplStr := range []string{
+				setResponseTemplate,
+				enqueueStaticTemplate,
+				enqueueStaticWithDelayTemplate,
+			} {
+				if err := writeTemplate(file, tmplStr, data, funcs); err != nil {
+					return err
+				}
 			}
 		}
+
 	}
 
 	return nil
