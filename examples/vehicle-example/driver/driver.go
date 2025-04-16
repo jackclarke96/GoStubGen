@@ -34,13 +34,18 @@ func NewDriver(opts ...Option) *Driver {
 }
 
 // basic driver method to enable test of mocking
-func (d *Driver) drive() error {
+func (d *Driver) drive() (int, error) {
 	cargo, err := d.vehicle.LoadCargo([]string{"clothes", "toiletries", "electronics"})
 	if err != nil {
-		return fmt.Errorf("drive: failed to load cargo! %w", err)
+		return 0, fmt.Errorf("drive: failed to load cargo! %w", err)
 	}
 	fmt.Printf("%+v pieces of cargo retrieved!", cargo)
-	return nil
+	cargo, err = d.vehicle.LoadCargo([]string{"clothes", "toiletries", "electronics"})
+	if err != nil {
+		return 0, fmt.Errorf("drive: failed to load second batch of cargo! %w", err)
+	}
+	fmt.Printf("%+v pieces of cargo retrieved!", cargo)
+	return cargo, nil
 }
 
 func (d *Driver) setVehicleDriveSelf() error {

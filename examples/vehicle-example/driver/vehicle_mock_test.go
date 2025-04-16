@@ -1,23 +1,27 @@
 package driver
 
-import "github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
+import (
+	"time"
+
+	"github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
+)
 
 // mockVehicleConfig stores mock flags and responses
 type mockVehicleConfig struct {
-	IsMoving         methodConfig[func() bool]
-	Honk             methodConfig[func(int)]
-	GetEngineSpecs   methodConfig[func() (int, string)]
-	GetPassengers    methodConfig[func() []string]
-	GetVehicleStatus methodConfig[func() vehicle.VehicleStatus]
-	Reverse          methodConfig[func() (string, error)]
-	Accelerate       methodConfig[func(int, string) (int, error)]
-	ApplyBrakes      methodConfig[func(float64) bool]
-	ChangeGears      methodConfig[func(int) (int, int)]
 	Telemetry        methodConfig[func() map[string]float64]
 	LoadCargo        methodConfig[func([]string) (int, error)]
+	Turn             methodConfig[func(string) string]
+	Accelerate       methodConfig[func(int, string) (int, error)]
+	IsMoving         methodConfig[func() bool]
+	GetPassengers    methodConfig[func() []string]
+	GetVehicleStatus methodConfig[func() vehicle.VehicleStatus]
 	UpdateStatus     methodConfig[func(vehicle.VehicleStatus) error]
 	GetTopSpeed      methodConfig[func() int]
-	Turn             methodConfig[func(string) string]
+	Reverse          methodConfig[func() (string, error)]
+	Honk             methodConfig[func(int)]
+	GetEngineSpecs   methodConfig[func() (int, string)]
+	ApplyBrakes      methodConfig[func(float64) bool]
+	ChangeGears      methodConfig[func(int) (int, int)]
 }
 
 // mockVehicle embeds a concrete Vehicle and its mocks
@@ -34,293 +38,14 @@ func newVehicleMock(v vehicle.Vehicle) *mockVehicle {
 	}
 }
 
-/* -------------------------- IsMoving Mock Helpers --------------------------- */
-
-// IsMoving overrides the method to return the mock response
-func (m *mockVehicle) IsMoving() bool {
-	if m.mocked.IsMoving.enabled {
-		return m.mocked.IsMoving.fallback.(bool)
-	}
-	return m.real.IsMoving()
-}
-
-// setIsMovingFunc sets the function for IsMoving
-func (m *mockVehicle) setIsMovingFunc(f func() bool) {
-	m.mocked.IsMoving.fallback = f
-}
-
-// enableIsMovingMock turns the mock on
-func (m *mockVehicle) enableIsMovingMock() {
-	m.mocked.IsMoving.enabled = true
-}
-
-// disableIsMovingMock turns the mock off
-func (m *mockVehicle) disableIsMovingMock() {
-	m.mocked.IsMoving.enabled = false
-}
-
-// setIsMovingResponse sets the response for IsMoving
-func (m *mockVehicle) setIsMovingResponse(output0 bool) {
-	m.setIsMovingFunc(func() bool {
-		return output0
-	})
-}
-
-/* -------------------------- Honk Mock Helpers --------------------------- */
-
-// Honk overrides the method to return the mock response
-func (m *mockVehicle) Honk(times int) {
-	if m.mocked.Honk.enabled {
-		m.mocked.Honk.fallback(times)
-	}
-	m.real.Honk(times)
-}
-
-// setHonkFunc sets the function for Honk
-func (m *mockVehicle) setHonkFunc(f func(int)) {
-	m.mocked.Honk.fallback = f
-}
-
-// enableHonkMock turns the mock on
-func (m *mockVehicle) enableHonkMock() {
-	m.mocked.Honk.enabled = true
-}
-
-// disableHonkMock turns the mock off
-func (m *mockVehicle) disableHonkMock() {
-	m.mocked.Honk.enabled = false
-}
-
-/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
-
-// GetEngineSpecs overrides the method to return the mock response
-func (m *mockVehicle) GetEngineSpecs() (int, string) {
-	if m.mocked.GetEngineSpecs.enabled {
-		return m.mocked.GetEngineSpecs.fallback()
-	}
-	return m.real.GetEngineSpecs()
-}
-
-// setGetEngineSpecsFunc sets the function for GetEngineSpecs
-func (m *mockVehicle) setGetEngineSpecsFunc(f func() (int, string)) {
-	m.mocked.GetEngineSpecs.fallback = f
-}
-
-// enableGetEngineSpecsMock turns the mock on
-func (m *mockVehicle) enableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.enabled = true
-}
-
-// disableGetEngineSpecsMock turns the mock off
-func (m *mockVehicle) disableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.enabled = false
-}
-
-// setGetEngineSpecsResponse sets the response for GetEngineSpecs
-func (m *mockVehicle) setGetEngineSpecsResponse(output0 int, output1 string) {
-	m.setGetEngineSpecsFunc(func() (int, string) {
-		return output0, output1
-	})
-}
-
-/* -------------------------- GetPassengers Mock Helpers --------------------------- */
-
-// GetPassengers overrides the method to return the mock response
-func (m *mockVehicle) GetPassengers() []string {
-	if m.mocked.GetPassengers.enabled {
-		return m.mocked.GetPassengers.fallback()
-	}
-	return m.real.GetPassengers()
-}
-
-// setGetPassengersFunc sets the function for GetPassengers
-func (m *mockVehicle) setGetPassengersFunc(f func() []string) {
-	m.mocked.GetPassengers.fallback = f
-}
-
-// enableGetPassengersMock turns the mock on
-func (m *mockVehicle) enableGetPassengersMock() {
-	m.mocked.GetPassengers.enabled = true
-}
-
-// disableGetPassengersMock turns the mock off
-func (m *mockVehicle) disableGetPassengersMock() {
-	m.mocked.GetPassengers.enabled = false
-}
-
-// setGetPassengersResponse sets the response for GetPassengers
-func (m *mockVehicle) setGetPassengersResponse(output0 []string) {
-	m.setGetPassengersFunc(func() []string {
-		return output0
-	})
-}
-
-/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
-
-// GetVehicleStatus overrides the method to return the mock response
-func (m *mockVehicle) GetVehicleStatus() vehicle.VehicleStatus {
-	if m.mocked.GetVehicleStatus.enabled {
-		return m.mocked.GetVehicleStatus.fallback()
-	}
-	return m.real.GetVehicleStatus()
-}
-
-// setGetVehicleStatusFunc sets the function for GetVehicleStatus
-func (m *mockVehicle) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
-	m.mocked.GetVehicleStatus.fallback = f
-}
-
-// enableGetVehicleStatusMock turns the mock on
-func (m *mockVehicle) enableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.enabled = true
-}
-
-// disableGetVehicleStatusMock turns the mock off
-func (m *mockVehicle) disableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.enabled = false
-}
-
-// setGetVehicleStatusResponse sets the response for GetVehicleStatus
-func (m *mockVehicle) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
-	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
-		return output0
-	})
-}
-
-/* -------------------------- Reverse Mock Helpers --------------------------- */
-
-// Reverse overrides the method to return the mock response
-func (m *mockVehicle) Reverse() (string, error) {
-	if m.mocked.Reverse.enabled {
-		return m.mocked.Reverse.fallback()
-	}
-	return m.real.Reverse()
-}
-
-// setReverseFunc sets the function for Reverse
-func (m *mockVehicle) setReverseFunc(f func() (string, error)) {
-	m.mocked.Reverse.fallback = f
-}
-
-// enableReverseMock turns the mock on
-func (m *mockVehicle) enableReverseMock() {
-	m.mocked.Reverse.enabled = true
-}
-
-// disableReverseMock turns the mock off
-func (m *mockVehicle) disableReverseMock() {
-	m.mocked.Reverse.enabled = false
-}
-
-// setReverseResponse sets the response for Reverse
-func (m *mockVehicle) setReverseResponse(output0 string, output1 error) {
-	m.setReverseFunc(func() (string, error) {
-		return output0, output1
-	})
-}
-
-/* -------------------------- Accelerate Mock Helpers --------------------------- */
-
-// Accelerate overrides the method to return the mock response
-func (m *mockVehicle) Accelerate(speed int, unit string) (int, error) {
-	if m.mocked.Accelerate.enabled {
-		return m.mocked.Accelerate.fallback(speed, unit)
-	}
-	return m.real.Accelerate(speed, unit)
-}
-
-// setAccelerateFunc sets the function for Accelerate
-func (m *mockVehicle) setAccelerateFunc(f func(int, string) (int, error)) {
-	m.mocked.Accelerate.fallback = f
-}
-
-// enableAccelerateMock turns the mock on
-func (m *mockVehicle) enableAccelerateMock() {
-	m.mocked.Accelerate.enabled = true
-}
-
-// disableAccelerateMock turns the mock off
-func (m *mockVehicle) disableAccelerateMock() {
-	m.mocked.Accelerate.enabled = false
-}
-
-// setAccelerateResponse sets the response for Accelerate
-func (m *mockVehicle) setAccelerateResponse(output0 int, output1 error) {
-	m.setAccelerateFunc(func(int, string) (int, error) {
-		return output0, output1
-	})
-}
-
-/* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
-
-// ApplyBrakes overrides the method to return the mock response
-func (m *mockVehicle) ApplyBrakes(force float64) bool {
-	if m.mocked.ApplyBrakes.enabled {
-		return m.mocked.ApplyBrakes.fallback(force)
-	}
-	return m.real.ApplyBrakes(force)
-}
-
-// setApplyBrakesFunc sets the function for ApplyBrakes
-func (m *mockVehicle) setApplyBrakesFunc(f func(float64) bool) {
-	m.mocked.ApplyBrakes.fallback = f
-}
-
-// enableApplyBrakesMock turns the mock on
-func (m *mockVehicle) enableApplyBrakesMock() {
-	m.mocked.ApplyBrakes.enabled = true
-}
-
-// disableApplyBrakesMock turns the mock off
-func (m *mockVehicle) disableApplyBrakesMock() {
-	m.mocked.ApplyBrakes.enabled = false
-}
-
-// setApplyBrakesResponse sets the response for ApplyBrakes
-func (m *mockVehicle) setApplyBrakesResponse(output0 bool) {
-	m.setApplyBrakesFunc(func(float64) bool {
-		return output0
-	})
-}
-
-/* -------------------------- ChangeGears Mock Helpers --------------------------- */
-
-// ChangeGears overrides the method to return the mock response
-func (m *mockVehicle) ChangeGears(gear int) (int, int) {
-	if m.mocked.ChangeGears.enabled {
-		return m.mocked.ChangeGears.fallback(gear)
-	}
-	return m.real.ChangeGears(gear)
-}
-
-// setChangeGearsFunc sets the function for ChangeGears
-func (m *mockVehicle) setChangeGearsFunc(f func(int) (int, int)) {
-	m.mocked.ChangeGears.fallback = f
-}
-
-// enableChangeGearsMock turns the mock on
-func (m *mockVehicle) enableChangeGearsMock() {
-	m.mocked.ChangeGears.enabled = true
-}
-
-// disableChangeGearsMock turns the mock off
-func (m *mockVehicle) disableChangeGearsMock() {
-	m.mocked.ChangeGears.enabled = false
-}
-
-// setChangeGearsResponse sets the response for ChangeGears
-func (m *mockVehicle) setChangeGearsResponse(output0 int, output1 int) {
-	m.setChangeGearsFunc(func(int) (int, int) {
-		return output0, output1
-	})
-}
-
 /* -------------------------- Telemetry Mock Helpers --------------------------- */
 
 // Telemetry overrides the method to return the mock response
 func (m *mockVehicle) Telemetry() map[string]float64 {
 	if m.mocked.Telemetry.enabled {
-		return m.mocked.Telemetry.fallback()
+		return m.mocked.Telemetry.NextResponse(func() map[string]float64 {
+			return m.real.Telemetry()
+		})()
 	}
 	return m.real.Telemetry()
 }
@@ -340,6 +65,16 @@ func (m *mockVehicle) disableTelemetryMock() {
 	m.mocked.Telemetry.enabled = false
 }
 
+// enqueueTelemetryResponseFunc enqueues a function response for Telemetry
+func (m *mockVehicle) enqueueTelemetryResponseFunc(f func() map[string]float64) {
+	m.mocked.Telemetry.EnqueueWithDelay(f, 0)
+}
+
+// enqueueTelemetryResponseFuncWithDelay enqueues a function response with delay for Telemetry
+func (m *mockVehicle) enqueueTelemetryResponseFuncWithDelay(f func() map[string]float64, d time.Duration) {
+	m.mocked.Telemetry.EnqueueWithDelay(f, d)
+}
+
 // setTelemetryResponse sets the response for Telemetry
 func (m *mockVehicle) setTelemetryResponse(output0 map[string]float64) {
 	m.setTelemetryFunc(func() map[string]float64 {
@@ -347,12 +82,29 @@ func (m *mockVehicle) setTelemetryResponse(output0 map[string]float64) {
 	})
 }
 
+// enqueueTelemetryResponse enqueues a static response for Telemetry
+func (m *mockVehicle) enqueueTelemetryResponse(output0 map[string]float64) {
+	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
+		return output0
+	}, 0)
+}
+
+// enqueueTelemetryResponseWithDelay enqueues a static response with delay for Telemetry
+func (m *mockVehicle) enqueueTelemetryResponseWithDelay(output0 map[string]float64, d time.Duration) {
+	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
 /* -------------------------- LoadCargo Mock Helpers --------------------------- */
 
 // LoadCargo overrides the method to return the mock response
 func (m *mockVehicle) LoadCargo(items []string) (int, error) {
 	if m.mocked.LoadCargo.enabled {
-		return m.mocked.LoadCargo.fallback(items)
+		return m.mocked.LoadCargo.NextResponse(func(items []string) (int, error) {
+			return m.real.LoadCargo(items)
+		})(items)
 	}
 	return m.real.LoadCargo(items)
 }
@@ -372,6 +124,16 @@ func (m *mockVehicle) disableLoadCargoMock() {
 	m.mocked.LoadCargo.enabled = false
 }
 
+// enqueueLoadCargoResponseFunc enqueues a function response for LoadCargo
+func (m *mockVehicle) enqueueLoadCargoResponseFunc(f func([]string) (int, error)) {
+	m.mocked.LoadCargo.EnqueueWithDelay(f, 0)
+}
+
+// enqueueLoadCargoResponseFuncWithDelay enqueues a function response with delay for LoadCargo
+func (m *mockVehicle) enqueueLoadCargoResponseFuncWithDelay(f func([]string) (int, error), d time.Duration) {
+	m.mocked.LoadCargo.EnqueueWithDelay(f, d)
+}
+
 // setLoadCargoResponse sets the response for LoadCargo
 func (m *mockVehicle) setLoadCargoResponse(output0 int, output1 error) {
 	m.setLoadCargoFunc(func([]string) (int, error) {
@@ -379,68 +141,19 @@ func (m *mockVehicle) setLoadCargoResponse(output0 int, output1 error) {
 	})
 }
 
-/* -------------------------- UpdateStatus Mock Helpers --------------------------- */
-
-// UpdateStatus overrides the method to return the mock response
-func (m *mockVehicle) UpdateStatus(status vehicle.VehicleStatus) error {
-	if m.mocked.UpdateStatus.enabled {
-		return m.mocked.UpdateStatus.fallback(status)
-	}
-	return m.real.UpdateStatus(status)
+// enqueueLoadCargoResponse enqueues a static response for LoadCargo
+func (m *mockVehicle) enqueueLoadCargoResponse(output0 int, output1 error) {
+	m.mocked.LoadCargo.EnqueueWithDelay(func([]string) (int, error) {
+		return output0, output1
+	}, 0)
 }
 
-// setUpdateStatusFunc sets the function for UpdateStatus
-func (m *mockVehicle) setUpdateStatusFunc(f func(vehicle.VehicleStatus) error) {
-	m.mocked.UpdateStatus.fallback = f
-}
-
-// enableUpdateStatusMock turns the mock on
-func (m *mockVehicle) enableUpdateStatusMock() {
-	m.mocked.UpdateStatus.enabled = true
-}
-
-// disableUpdateStatusMock turns the mock off
-func (m *mockVehicle) disableUpdateStatusMock() {
-	m.mocked.UpdateStatus.enabled = false
-}
-
-// setUpdateStatusResponse sets the response for UpdateStatus
-func (m *mockVehicle) setUpdateStatusResponse(output0 error) {
-	m.setUpdateStatusFunc(func(vehicle.VehicleStatus) error {
-		return output0
-	})
-}
-
-/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
-
-// GetTopSpeed overrides the method to return the mock response
-func (m *mockVehicle) GetTopSpeed() int {
-	if m.mocked.GetTopSpeed.enabled {
-		return m.mocked.GetTopSpeed.fallback()
-	}
-	return m.real.GetTopSpeed()
-}
-
-// setGetTopSpeedFunc sets the function for GetTopSpeed
-func (m *mockVehicle) setGetTopSpeedFunc(f func() int) {
-	m.mocked.GetTopSpeed.fallback = f
-}
-
-// enableGetTopSpeedMock turns the mock on
-func (m *mockVehicle) enableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.enabled = true
-}
-
-// disableGetTopSpeedMock turns the mock off
-func (m *mockVehicle) disableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.enabled = false
-}
-
-// setGetTopSpeedResponse sets the response for GetTopSpeed
-func (m *mockVehicle) setGetTopSpeedResponse(output0 int) {
-	m.setGetTopSpeedFunc(func() int {
-		return output0
-	})
+// enqueueLoadCargoResponseWithDelay enqueues a static response with delay for LoadCargo
+func (m *mockVehicle) enqueueLoadCargoResponseWithDelay(output0 int, output1 error, d time.Duration) {
+	m.mocked.LoadCargo.EnqueueWithDelay(func([]string) (int, error) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
 }
 
 /* -------------------------- Turn Mock Helpers --------------------------- */
@@ -448,7 +161,9 @@ func (m *mockVehicle) setGetTopSpeedResponse(output0 int) {
 // Turn overrides the method to return the mock response
 func (m *mockVehicle) Turn(dir string) string {
 	if m.mocked.Turn.enabled {
-		return m.mocked.Turn.fallback(dir)
+		return m.mocked.Turn.NextResponse(func(dir string) string {
+			return m.real.Turn(dir)
+		})(dir)
 	}
 	return m.real.Turn(dir)
 }
@@ -468,9 +183,662 @@ func (m *mockVehicle) disableTurnMock() {
 	m.mocked.Turn.enabled = false
 }
 
+// enqueueTurnResponseFunc enqueues a function response for Turn
+func (m *mockVehicle) enqueueTurnResponseFunc(f func(string) string) {
+	m.mocked.Turn.EnqueueWithDelay(f, 0)
+}
+
+// enqueueTurnResponseFuncWithDelay enqueues a function response with delay for Turn
+func (m *mockVehicle) enqueueTurnResponseFuncWithDelay(f func(string) string, d time.Duration) {
+	m.mocked.Turn.EnqueueWithDelay(f, d)
+}
+
 // setTurnResponse sets the response for Turn
 func (m *mockVehicle) setTurnResponse(output0 string) {
 	m.setTurnFunc(func(string) string {
 		return output0
 	})
+}
+
+// enqueueTurnResponse enqueues a static response for Turn
+func (m *mockVehicle) enqueueTurnResponse(output0 string) {
+	m.mocked.Turn.EnqueueWithDelay(func(string) string {
+		return output0
+	}, 0)
+}
+
+// enqueueTurnResponseWithDelay enqueues a static response with delay for Turn
+func (m *mockVehicle) enqueueTurnResponseWithDelay(output0 string, d time.Duration) {
+	m.mocked.Turn.EnqueueWithDelay(func(string) string {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- Accelerate Mock Helpers --------------------------- */
+
+// Accelerate overrides the method to return the mock response
+func (m *mockVehicle) Accelerate(speed int, unit string) (int, error) {
+	if m.mocked.Accelerate.enabled {
+		return m.mocked.Accelerate.NextResponse(func(speed int, unit string) (int, error) {
+			return m.real.Accelerate(speed, unit)
+		})(speed, unit)
+	}
+	return m.real.Accelerate(speed, unit)
+}
+
+// setAccelerateFunc sets the function for Accelerate
+func (m *mockVehicle) setAccelerateFunc(f func(int, string) (int, error)) {
+	m.mocked.Accelerate.fallback = f
+}
+
+// enableAccelerateMock turns the mock on
+func (m *mockVehicle) enableAccelerateMock() {
+	m.mocked.Accelerate.enabled = true
+}
+
+// disableAccelerateMock turns the mock off
+func (m *mockVehicle) disableAccelerateMock() {
+	m.mocked.Accelerate.enabled = false
+}
+
+// enqueueAccelerateResponseFunc enqueues a function response for Accelerate
+func (m *mockVehicle) enqueueAccelerateResponseFunc(f func(int, string) (int, error)) {
+	m.mocked.Accelerate.EnqueueWithDelay(f, 0)
+}
+
+// enqueueAccelerateResponseFuncWithDelay enqueues a function response with delay for Accelerate
+func (m *mockVehicle) enqueueAccelerateResponseFuncWithDelay(f func(int, string) (int, error), d time.Duration) {
+	m.mocked.Accelerate.EnqueueWithDelay(f, d)
+}
+
+// setAccelerateResponse sets the response for Accelerate
+func (m *mockVehicle) setAccelerateResponse(output0 int, output1 error) {
+	m.setAccelerateFunc(func(int, string) (int, error) {
+		return output0, output1
+	})
+}
+
+// enqueueAccelerateResponse enqueues a static response for Accelerate
+func (m *mockVehicle) enqueueAccelerateResponse(output0 int, output1 error) {
+	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueAccelerateResponseWithDelay enqueues a static response with delay for Accelerate
+func (m *mockVehicle) enqueueAccelerateResponseWithDelay(output0 int, output1 error, d time.Duration) {
+	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
+}
+
+/* -------------------------- IsMoving Mock Helpers --------------------------- */
+
+// IsMoving overrides the method to return the mock response
+func (m *mockVehicle) IsMoving() bool {
+	if m.mocked.IsMoving.enabled {
+		return m.mocked.IsMoving.NextResponse(func() bool {
+			return m.real.IsMoving()
+		})()
+	}
+	return m.real.IsMoving()
+}
+
+// setIsMovingFunc sets the function for IsMoving
+func (m *mockVehicle) setIsMovingFunc(f func() bool) {
+	m.mocked.IsMoving.fallback = f
+}
+
+// enableIsMovingMock turns the mock on
+func (m *mockVehicle) enableIsMovingMock() {
+	m.mocked.IsMoving.enabled = true
+}
+
+// disableIsMovingMock turns the mock off
+func (m *mockVehicle) disableIsMovingMock() {
+	m.mocked.IsMoving.enabled = false
+}
+
+// enqueueIsMovingResponseFunc enqueues a function response for IsMoving
+func (m *mockVehicle) enqueueIsMovingResponseFunc(f func() bool) {
+	m.mocked.IsMoving.EnqueueWithDelay(f, 0)
+}
+
+// enqueueIsMovingResponseFuncWithDelay enqueues a function response with delay for IsMoving
+func (m *mockVehicle) enqueueIsMovingResponseFuncWithDelay(f func() bool, d time.Duration) {
+	m.mocked.IsMoving.EnqueueWithDelay(f, d)
+}
+
+// setIsMovingResponse sets the response for IsMoving
+func (m *mockVehicle) setIsMovingResponse(output0 bool) {
+	m.setIsMovingFunc(func() bool {
+		return output0
+	})
+}
+
+// enqueueIsMovingResponse enqueues a static response for IsMoving
+func (m *mockVehicle) enqueueIsMovingResponse(output0 bool) {
+	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
+		return output0
+	}, 0)
+}
+
+// enqueueIsMovingResponseWithDelay enqueues a static response with delay for IsMoving
+func (m *mockVehicle) enqueueIsMovingResponseWithDelay(output0 bool, d time.Duration) {
+	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- GetPassengers Mock Helpers --------------------------- */
+
+// GetPassengers overrides the method to return the mock response
+func (m *mockVehicle) GetPassengers() []string {
+	if m.mocked.GetPassengers.enabled {
+		return m.mocked.GetPassengers.NextResponse(func() []string {
+			return m.real.GetPassengers()
+		})()
+	}
+	return m.real.GetPassengers()
+}
+
+// setGetPassengersFunc sets the function for GetPassengers
+func (m *mockVehicle) setGetPassengersFunc(f func() []string) {
+	m.mocked.GetPassengers.fallback = f
+}
+
+// enableGetPassengersMock turns the mock on
+func (m *mockVehicle) enableGetPassengersMock() {
+	m.mocked.GetPassengers.enabled = true
+}
+
+// disableGetPassengersMock turns the mock off
+func (m *mockVehicle) disableGetPassengersMock() {
+	m.mocked.GetPassengers.enabled = false
+}
+
+// enqueueGetPassengersResponseFunc enqueues a function response for GetPassengers
+func (m *mockVehicle) enqueueGetPassengersResponseFunc(f func() []string) {
+	m.mocked.GetPassengers.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetPassengersResponseFuncWithDelay enqueues a function response with delay for GetPassengers
+func (m *mockVehicle) enqueueGetPassengersResponseFuncWithDelay(f func() []string, d time.Duration) {
+	m.mocked.GetPassengers.EnqueueWithDelay(f, d)
+}
+
+// setGetPassengersResponse sets the response for GetPassengers
+func (m *mockVehicle) setGetPassengersResponse(output0 []string) {
+	m.setGetPassengersFunc(func() []string {
+		return output0
+	})
+}
+
+// enqueueGetPassengersResponse enqueues a static response for GetPassengers
+func (m *mockVehicle) enqueueGetPassengersResponse(output0 []string) {
+	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
+		return output0
+	}, 0)
+}
+
+// enqueueGetPassengersResponseWithDelay enqueues a static response with delay for GetPassengers
+func (m *mockVehicle) enqueueGetPassengersResponseWithDelay(output0 []string, d time.Duration) {
+	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
+
+// GetVehicleStatus overrides the method to return the mock response
+func (m *mockVehicle) GetVehicleStatus() vehicle.VehicleStatus {
+	if m.mocked.GetVehicleStatus.enabled {
+		return m.mocked.GetVehicleStatus.NextResponse(func() vehicle.VehicleStatus {
+			return m.real.GetVehicleStatus()
+		})()
+	}
+	return m.real.GetVehicleStatus()
+}
+
+// setGetVehicleStatusFunc sets the function for GetVehicleStatus
+func (m *mockVehicle) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.fallback = f
+}
+
+// enableGetVehicleStatusMock turns the mock on
+func (m *mockVehicle) enableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.enabled = true
+}
+
+// disableGetVehicleStatusMock turns the mock off
+func (m *mockVehicle) disableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.enabled = false
+}
+
+// enqueueGetVehicleStatusResponseFunc enqueues a function response for GetVehicleStatus
+func (m *mockVehicle) enqueueGetVehicleStatusResponseFunc(f func() vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetVehicleStatusResponseFuncWithDelay enqueues a function response with delay for GetVehicleStatus
+func (m *mockVehicle) enqueueGetVehicleStatusResponseFuncWithDelay(f func() vehicle.VehicleStatus, d time.Duration) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, d)
+}
+
+// setGetVehicleStatusResponse sets the response for GetVehicleStatus
+func (m *mockVehicle) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
+	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
+		return output0
+	})
+}
+
+// enqueueGetVehicleStatusResponse enqueues a static response for GetVehicleStatus
+func (m *mockVehicle) enqueueGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
+		return output0
+	}, 0)
+}
+
+// enqueueGetVehicleStatusResponseWithDelay enqueues a static response with delay for GetVehicleStatus
+func (m *mockVehicle) enqueueGetVehicleStatusResponseWithDelay(output0 vehicle.VehicleStatus, d time.Duration) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- UpdateStatus Mock Helpers --------------------------- */
+
+// UpdateStatus overrides the method to return the mock response
+func (m *mockVehicle) UpdateStatus(status vehicle.VehicleStatus) error {
+	if m.mocked.UpdateStatus.enabled {
+		return m.mocked.UpdateStatus.NextResponse(func(status vehicle.VehicleStatus) error {
+			return m.real.UpdateStatus(status)
+		})(status)
+	}
+	return m.real.UpdateStatus(status)
+}
+
+// setUpdateStatusFunc sets the function for UpdateStatus
+func (m *mockVehicle) setUpdateStatusFunc(f func(vehicle.VehicleStatus) error) {
+	m.mocked.UpdateStatus.fallback = f
+}
+
+// enableUpdateStatusMock turns the mock on
+func (m *mockVehicle) enableUpdateStatusMock() {
+	m.mocked.UpdateStatus.enabled = true
+}
+
+// disableUpdateStatusMock turns the mock off
+func (m *mockVehicle) disableUpdateStatusMock() {
+	m.mocked.UpdateStatus.enabled = false
+}
+
+// enqueueUpdateStatusResponseFunc enqueues a function response for UpdateStatus
+func (m *mockVehicle) enqueueUpdateStatusResponseFunc(f func(vehicle.VehicleStatus) error) {
+	m.mocked.UpdateStatus.EnqueueWithDelay(f, 0)
+}
+
+// enqueueUpdateStatusResponseFuncWithDelay enqueues a function response with delay for UpdateStatus
+func (m *mockVehicle) enqueueUpdateStatusResponseFuncWithDelay(f func(vehicle.VehicleStatus) error, d time.Duration) {
+	m.mocked.UpdateStatus.EnqueueWithDelay(f, d)
+}
+
+// setUpdateStatusResponse sets the response for UpdateStatus
+func (m *mockVehicle) setUpdateStatusResponse(output0 error) {
+	m.setUpdateStatusFunc(func(vehicle.VehicleStatus) error {
+		return output0
+	})
+}
+
+// enqueueUpdateStatusResponse enqueues a static response for UpdateStatus
+func (m *mockVehicle) enqueueUpdateStatusResponse(output0 error) {
+	m.mocked.UpdateStatus.EnqueueWithDelay(func(vehicle.VehicleStatus) error {
+		return output0
+	}, 0)
+}
+
+// enqueueUpdateStatusResponseWithDelay enqueues a static response with delay for UpdateStatus
+func (m *mockVehicle) enqueueUpdateStatusResponseWithDelay(output0 error, d time.Duration) {
+	m.mocked.UpdateStatus.EnqueueWithDelay(func(vehicle.VehicleStatus) error {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
+
+// GetTopSpeed overrides the method to return the mock response
+func (m *mockVehicle) GetTopSpeed() int {
+	if m.mocked.GetTopSpeed.enabled {
+		return m.mocked.GetTopSpeed.NextResponse(func() int {
+			return m.real.GetTopSpeed()
+		})()
+	}
+	return m.real.GetTopSpeed()
+}
+
+// setGetTopSpeedFunc sets the function for GetTopSpeed
+func (m *mockVehicle) setGetTopSpeedFunc(f func() int) {
+	m.mocked.GetTopSpeed.fallback = f
+}
+
+// enableGetTopSpeedMock turns the mock on
+func (m *mockVehicle) enableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.enabled = true
+}
+
+// disableGetTopSpeedMock turns the mock off
+func (m *mockVehicle) disableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.enabled = false
+}
+
+// enqueueGetTopSpeedResponseFunc enqueues a function response for GetTopSpeed
+func (m *mockVehicle) enqueueGetTopSpeedResponseFunc(f func() int) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetTopSpeedResponseFuncWithDelay enqueues a function response with delay for GetTopSpeed
+func (m *mockVehicle) enqueueGetTopSpeedResponseFuncWithDelay(f func() int, d time.Duration) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(f, d)
+}
+
+// setGetTopSpeedResponse sets the response for GetTopSpeed
+func (m *mockVehicle) setGetTopSpeedResponse(output0 int) {
+	m.setGetTopSpeedFunc(func() int {
+		return output0
+	})
+}
+
+// enqueueGetTopSpeedResponse enqueues a static response for GetTopSpeed
+func (m *mockVehicle) enqueueGetTopSpeedResponse(output0 int) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+		return output0
+	}, 0)
+}
+
+// enqueueGetTopSpeedResponseWithDelay enqueues a static response with delay for GetTopSpeed
+func (m *mockVehicle) enqueueGetTopSpeedResponseWithDelay(output0 int, d time.Duration) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- Reverse Mock Helpers --------------------------- */
+
+// Reverse overrides the method to return the mock response
+func (m *mockVehicle) Reverse() (string, error) {
+	if m.mocked.Reverse.enabled {
+		return m.mocked.Reverse.NextResponse(func() (string, error) {
+			return m.real.Reverse()
+		})()
+	}
+	return m.real.Reverse()
+}
+
+// setReverseFunc sets the function for Reverse
+func (m *mockVehicle) setReverseFunc(f func() (string, error)) {
+	m.mocked.Reverse.fallback = f
+}
+
+// enableReverseMock turns the mock on
+func (m *mockVehicle) enableReverseMock() {
+	m.mocked.Reverse.enabled = true
+}
+
+// disableReverseMock turns the mock off
+func (m *mockVehicle) disableReverseMock() {
+	m.mocked.Reverse.enabled = false
+}
+
+// enqueueReverseResponseFunc enqueues a function response for Reverse
+func (m *mockVehicle) enqueueReverseResponseFunc(f func() (string, error)) {
+	m.mocked.Reverse.EnqueueWithDelay(f, 0)
+}
+
+// enqueueReverseResponseFuncWithDelay enqueues a function response with delay for Reverse
+func (m *mockVehicle) enqueueReverseResponseFuncWithDelay(f func() (string, error), d time.Duration) {
+	m.mocked.Reverse.EnqueueWithDelay(f, d)
+}
+
+// setReverseResponse sets the response for Reverse
+func (m *mockVehicle) setReverseResponse(output0 string, output1 error) {
+	m.setReverseFunc(func() (string, error) {
+		return output0, output1
+	})
+}
+
+// enqueueReverseResponse enqueues a static response for Reverse
+func (m *mockVehicle) enqueueReverseResponse(output0 string, output1 error) {
+	m.mocked.Reverse.EnqueueWithDelay(func() (string, error) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueReverseResponseWithDelay enqueues a static response with delay for Reverse
+func (m *mockVehicle) enqueueReverseResponseWithDelay(output0 string, output1 error, d time.Duration) {
+	m.mocked.Reverse.EnqueueWithDelay(func() (string, error) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
+}
+
+/* -------------------------- Honk Mock Helpers --------------------------- */
+
+// Honk overrides the method to return the mock response
+func (m *mockVehicle) Honk(times int) {
+	if m.mocked.Honk.enabled {
+		m.mocked.Honk.NextResponse(func(times int) {
+			m.real.Honk(times)
+		})(times)
+		return
+	}
+	m.real.Honk(times)
+}
+
+// setHonkFunc sets the function for Honk
+func (m *mockVehicle) setHonkFunc(f func(int)) {
+	m.mocked.Honk.fallback = f
+}
+
+// enableHonkMock turns the mock on
+func (m *mockVehicle) enableHonkMock() {
+	m.mocked.Honk.enabled = true
+}
+
+// disableHonkMock turns the mock off
+func (m *mockVehicle) disableHonkMock() {
+	m.mocked.Honk.enabled = false
+}
+
+// enqueueHonkResponseFunc enqueues a function response for Honk
+func (m *mockVehicle) enqueueHonkResponseFunc(f func(int)) {
+	m.mocked.Honk.EnqueueWithDelay(f, 0)
+}
+
+// enqueueHonkResponseFuncWithDelay enqueues a function response with delay for Honk
+func (m *mockVehicle) enqueueHonkResponseFuncWithDelay(f func(int), d time.Duration) {
+	m.mocked.Honk.EnqueueWithDelay(f, d)
+}
+
+/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
+
+// GetEngineSpecs overrides the method to return the mock response
+func (m *mockVehicle) GetEngineSpecs() (int, string) {
+	if m.mocked.GetEngineSpecs.enabled {
+		return m.mocked.GetEngineSpecs.NextResponse(func() (int, string) {
+			return m.real.GetEngineSpecs()
+		})()
+	}
+	return m.real.GetEngineSpecs()
+}
+
+// setGetEngineSpecsFunc sets the function for GetEngineSpecs
+func (m *mockVehicle) setGetEngineSpecsFunc(f func() (int, string)) {
+	m.mocked.GetEngineSpecs.fallback = f
+}
+
+// enableGetEngineSpecsMock turns the mock on
+func (m *mockVehicle) enableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.enabled = true
+}
+
+// disableGetEngineSpecsMock turns the mock off
+func (m *mockVehicle) disableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.enabled = false
+}
+
+// enqueueGetEngineSpecsResponseFunc enqueues a function response for GetEngineSpecs
+func (m *mockVehicle) enqueueGetEngineSpecsResponseFunc(f func() (int, string)) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetEngineSpecsResponseFuncWithDelay enqueues a function response with delay for GetEngineSpecs
+func (m *mockVehicle) enqueueGetEngineSpecsResponseFuncWithDelay(f func() (int, string), d time.Duration) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, d)
+}
+
+// setGetEngineSpecsResponse sets the response for GetEngineSpecs
+func (m *mockVehicle) setGetEngineSpecsResponse(output0 int, output1 string) {
+	m.setGetEngineSpecsFunc(func() (int, string) {
+		return output0, output1
+	})
+}
+
+// enqueueGetEngineSpecsResponse enqueues a static response for GetEngineSpecs
+func (m *mockVehicle) enqueueGetEngineSpecsResponse(output0 int, output1 string) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueGetEngineSpecsResponseWithDelay enqueues a static response with delay for GetEngineSpecs
+func (m *mockVehicle) enqueueGetEngineSpecsResponseWithDelay(output0 int, output1 string, d time.Duration) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
+}
+
+/* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
+
+// ApplyBrakes overrides the method to return the mock response
+func (m *mockVehicle) ApplyBrakes(force float64) bool {
+	if m.mocked.ApplyBrakes.enabled {
+		return m.mocked.ApplyBrakes.NextResponse(func(force float64) bool {
+			return m.real.ApplyBrakes(force)
+		})(force)
+	}
+	return m.real.ApplyBrakes(force)
+}
+
+// setApplyBrakesFunc sets the function for ApplyBrakes
+func (m *mockVehicle) setApplyBrakesFunc(f func(float64) bool) {
+	m.mocked.ApplyBrakes.fallback = f
+}
+
+// enableApplyBrakesMock turns the mock on
+func (m *mockVehicle) enableApplyBrakesMock() {
+	m.mocked.ApplyBrakes.enabled = true
+}
+
+// disableApplyBrakesMock turns the mock off
+func (m *mockVehicle) disableApplyBrakesMock() {
+	m.mocked.ApplyBrakes.enabled = false
+}
+
+// enqueueApplyBrakesResponseFunc enqueues a function response for ApplyBrakes
+func (m *mockVehicle) enqueueApplyBrakesResponseFunc(f func(float64) bool) {
+	m.mocked.ApplyBrakes.EnqueueWithDelay(f, 0)
+}
+
+// enqueueApplyBrakesResponseFuncWithDelay enqueues a function response with delay for ApplyBrakes
+func (m *mockVehicle) enqueueApplyBrakesResponseFuncWithDelay(f func(float64) bool, d time.Duration) {
+	m.mocked.ApplyBrakes.EnqueueWithDelay(f, d)
+}
+
+// setApplyBrakesResponse sets the response for ApplyBrakes
+func (m *mockVehicle) setApplyBrakesResponse(output0 bool) {
+	m.setApplyBrakesFunc(func(float64) bool {
+		return output0
+	})
+}
+
+// enqueueApplyBrakesResponse enqueues a static response for ApplyBrakes
+func (m *mockVehicle) enqueueApplyBrakesResponse(output0 bool) {
+	m.mocked.ApplyBrakes.EnqueueWithDelay(func(float64) bool {
+		return output0
+	}, 0)
+}
+
+// enqueueApplyBrakesResponseWithDelay enqueues a static response with delay for ApplyBrakes
+func (m *mockVehicle) enqueueApplyBrakesResponseWithDelay(output0 bool, d time.Duration) {
+	m.mocked.ApplyBrakes.EnqueueWithDelay(func(float64) bool {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- ChangeGears Mock Helpers --------------------------- */
+
+// ChangeGears overrides the method to return the mock response
+func (m *mockVehicle) ChangeGears(gear int) (int, int) {
+	if m.mocked.ChangeGears.enabled {
+		return m.mocked.ChangeGears.NextResponse(func(gear int) (int, int) {
+			return m.real.ChangeGears(gear)
+		})(gear)
+	}
+	return m.real.ChangeGears(gear)
+}
+
+// setChangeGearsFunc sets the function for ChangeGears
+func (m *mockVehicle) setChangeGearsFunc(f func(int) (int, int)) {
+	m.mocked.ChangeGears.fallback = f
+}
+
+// enableChangeGearsMock turns the mock on
+func (m *mockVehicle) enableChangeGearsMock() {
+	m.mocked.ChangeGears.enabled = true
+}
+
+// disableChangeGearsMock turns the mock off
+func (m *mockVehicle) disableChangeGearsMock() {
+	m.mocked.ChangeGears.enabled = false
+}
+
+// enqueueChangeGearsResponseFunc enqueues a function response for ChangeGears
+func (m *mockVehicle) enqueueChangeGearsResponseFunc(f func(int) (int, int)) {
+	m.mocked.ChangeGears.EnqueueWithDelay(f, 0)
+}
+
+// enqueueChangeGearsResponseFuncWithDelay enqueues a function response with delay for ChangeGears
+func (m *mockVehicle) enqueueChangeGearsResponseFuncWithDelay(f func(int) (int, int), d time.Duration) {
+	m.mocked.ChangeGears.EnqueueWithDelay(f, d)
+}
+
+// setChangeGearsResponse sets the response for ChangeGears
+func (m *mockVehicle) setChangeGearsResponse(output0 int, output1 int) {
+	m.setChangeGearsFunc(func(int) (int, int) {
+		return output0, output1
+	})
+}
+
+// enqueueChangeGearsResponse enqueues a static response for ChangeGears
+func (m *mockVehicle) enqueueChangeGearsResponse(output0 int, output1 int) {
+	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueChangeGearsResponseWithDelay enqueues a static response with delay for ChangeGears
+func (m *mockVehicle) enqueueChangeGearsResponseWithDelay(output0 int, output1 int, d time.Duration) {
+	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
 }

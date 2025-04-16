@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
 )
@@ -22,7 +23,7 @@ func TestDriverDriveWithMock(t *testing.T) {
 	mockVeh.setLoadCargoResponse(0, errors.New("mock error!"))
 
 	// Call the driver's drive method which uses LoadCargo.
-	err := d.drive()
+	_, err := d.drive()
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -44,9 +45,64 @@ func TestDriverDriveWithMockFunc(t *testing.T) {
 		return 15, nil
 	})
 	// Call the driver's drive method which uses LoadCargo.
-	err := d.drive()
+	_, err := d.drive()
 	if err != nil {
 		t.Fatalf("Did not expect an error. Got %s", err)
+	}
+}
+
+func TestDriverDriveWithMultipleResponses(t *testing.T) {
+
+	// Create a new mock vehicle.
+	mockVeh := newVehicleMock(vehicle.NewRoboCar())
+
+	// Inject the mock vehicle into the Driver.
+	d := NewDriver(WithVehicle(mockVeh))
+
+	// Set up the expected behavior for LoadCargo:
+	// todo: lock queue and clear queue
+	mockVeh.enableLoadCargoMock()
+	mockVeh.enqueueLoadCargoResponse(10, nil)
+	mockVeh.enqueueLoadCargoResponseFunc(func(_ []string) (int, error) {
+		return 12, nil
+	})
+	mockVeh.enqueueLoadCargoResponse(14, nil)
+
+	// Call the driver's drive method which uses LoadCargo.
+	resp, err := d.drive()
+	if err != nil {
+		t.Fatalf("Did not expect an error. Got %s", err)
+	}
+	if resp != 12 {
+		t.Fatalf("Expected 12. Got %v", resp)
+	}
+}
+
+func TestDriverDriveWithMultipleResponsesAndDelay(t *testing.T) {
+
+	// Create a new mock vehicle.
+	mockVeh := newVehicleMock(vehicle.NewRoboCar())
+
+	// Inject the mock vehicle into the Driver.
+	d := NewDriver(WithVehicle(mockVeh))
+
+	// Set up the expected behavior for LoadCargo:
+	// todo: lock queue and clear queue
+	mockVeh.enableLoadCargoMock()
+	mockVeh.enqueueLoadCargoResponseWithDelay(16, nil, 5*time.Second)
+	mockVeh.enqueueLoadCargoResponseFuncWithDelay(func(_ []string) (int, error) {
+		fmt.Println("delay!!!!")
+		return 18, nil
+	}, 5*time.Second)
+	mockVeh.enqueueLoadCargoResponse(20, nil)
+
+	// Call the driver's drive method which uses LoadCargo.
+	resp, err := d.drive()
+	if err != nil {
+		t.Fatalf("Did not expect an error. Got %s", err)
+	}
+	if resp != 12 {
+		t.Fatalf("Expected 12. Got %v", resp)
 	}
 }
 

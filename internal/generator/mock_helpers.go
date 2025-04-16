@@ -20,15 +20,15 @@ type QueuedItem[T any] struct {
 }
 
 type methodConfig[T any] struct {
-	Enabled  bool
+	enabled  bool
 	mu       sync.Mutex
 	queue    []QueuedItem[T]
-	Fallback interface{}
+	fallback interface{}
 }
 
 // Set a fallback function
 func (m *methodConfig[T]) SetResponseFunc(f T) {
-	m.Fallback = f
+	m.fallback = f
 }
 
 // Set a static value as fallback
@@ -99,7 +99,7 @@ func (m *methodConfig[T]) NextResponse(defaultFunc T) T {
 		return item.Fn
 	}
 
-	if f, ok := m.Fallback.(T); ok {
+	if f, ok := m.fallback.(T); ok {
 		return f
 	}
 

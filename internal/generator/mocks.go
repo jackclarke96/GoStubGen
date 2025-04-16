@@ -43,7 +43,7 @@ const methodDividerTemplate = `
 const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
-	if m.mocked.{{ title .Name }}.Enabled {
+	if m.mocked.{{ title .Name }}.enabled {
 		{{- if gt (len .Outputs) 0 }}
 		return m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
 			return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
@@ -65,7 +65,7 @@ func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, 
 const setFuncTemplate = `
 // set{{ title .Name }}Func sets the function for {{ .Name }}
 func (m *{{ .MockName }}) set{{ title .Name }}Func(f {{ responseSignature .Inputs .Outputs }}) {
-	m.mocked.{{ .Name }}.Fallback = f
+	m.mocked.{{ .Name }}.fallback = f
 }`
 
 const setResponseTemplate = `

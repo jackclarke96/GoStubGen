@@ -10,37 +10,37 @@ type QueuedItem[T any] struct {
 	Delay time.Duration
 }
 
-type MethodConfig[T any] struct {
-	Enabled  bool
+type methodConfig[T any] struct {
+	enabled  bool
 	mu       sync.Mutex
 	queue    []QueuedItem[T]
-	Fallback interface{}
+	fallback interface{}
 }
 
 // Set a fallback function
-func (m *MethodConfig[T]) SetResponseFunc(f T) {
-	m.Fallback = f
+func (m *methodConfig[T]) SetResponseFunc(f T) {
+	m.fallback = f
 }
 
 // Set a static value as fallback
-func (m *MethodConfig[T]) SetStaticResponse(f T) {
+func (m *methodConfig[T]) SetStaticResponse(f T) {
 	m.SetResponseFunc(f)
 }
 
 // Enqueue a function with delay
-func (m *MethodConfig[T]) EnqueueWithDelay(f T, d time.Duration) {
+func (m *methodConfig[T]) EnqueueWithDelay(f T, d time.Duration) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.queue = append(m.queue, QueuedItem[T]{Fn: f, Delay: d})
 }
 
 // Enqueue a static function with delay
-func (m *MethodConfig[T]) EnqueueStaticWithDelay(f T, d time.Duration) {
+func (m *methodConfig[T]) EnqueueStaticWithDelay(f T, d time.Duration) {
 	m.EnqueueWithDelay(f, d)
 }
 
 // Enqueue multiple functions without delay
-func (m *MethodConfig[T]) SetResponseFuncQueue(fns []T) {
+func (m *methodConfig[T]) SetResponseFuncQueue(fns []T) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, fn := range fns {
@@ -49,35 +49,35 @@ func (m *MethodConfig[T]) SetResponseFuncQueue(fns []T) {
 }
 
 // Enqueue a single function (shortcut)
-func (m *MethodConfig[T]) SetResponseFuncOnce(f T) {
+func (m *methodConfig[T]) SetResponseFuncOnce(f T) {
 	m.SetResponseFuncQueue([]T{f})
 }
 
 // Enqueue a function N times
-func (m *MethodConfig[T]) SetResponseFuncTimes(f T, times int) {
+func (m *methodConfig[T]) SetResponseFuncTimes(f T, times int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	for i := 0; i < times; i++ {
+	for range times {
 		m.queue = append(m.queue, QueuedItem[T]{Fn: f, Delay: 0})
 	}
 }
 
 // Clear queue
-func (m *MethodConfig[T]) ResetQueue() {
+func (m *methodConfig[T]) ResetQueue() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.queue = nil
 }
 
 // Check queue length
-func (m *MethodConfig[T]) PeekQueueLength() int {
+func (m *methodConfig[T]) PeekQueueLength() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return len(m.queue)
 }
 
 // Get next response from queue or fallback
-func (m *MethodConfig[T]) NextResponse(defaultFunc T) T {
+func (m *methodConfig[T]) NextResponse(defaultFunc T) T {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -90,7 +90,7 @@ func (m *MethodConfig[T]) NextResponse(defaultFunc T) T {
 		return item.Fn
 	}
 
-	if f, ok := m.Fallback.(T); ok {
+	if f, ok := m.fallback.(T); ok {
 		return f
 	}
 
