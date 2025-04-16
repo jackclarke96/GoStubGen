@@ -9,6 +9,13 @@ import (
 	"github.com/jackclarke/GoStubGen/examples/vehicle-example/vehicle"
 )
 
+// TODO: enable mock for repsponses 1,2 and 3 but use real for 4
+// TODO: spy
+// TODO: setResponseTimes
+// TODO: channels for background stuff
+// TODO: helpers into package so dont need to define
+// TODO: can things be more generic?
+
 func TestDriverDriveWithMock(t *testing.T) {
 
 	// Create a new mock vehicle.
