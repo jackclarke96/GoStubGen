@@ -13,7 +13,7 @@ func generateMethodConfig() string {
 	return `// {{ .MockConfigName }} stores mock flags and responses
 type {{ .MockConfigName }} struct {
 {{ range .Methods }}
-	{{ .Name }} methodConfig[func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}]
+	{{ .Name }} stubs.MethodConfig[func({{ range $index, $param := .Inputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $index, $param := .Outputs }}{{ if $index }}, {{ end }}{{ $param.Type }}{{ end }}){{ end }}]
 {{- end }}
 }`
 }
@@ -43,7 +43,7 @@ const methodDividerTemplate = `
 const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
-	if m.mocked.{{ title .Name }}.enabled {
+	if m.mocked.{{ title .Name }}.Enabled {
 		{{- if gt (len .Outputs) 0 }}
 		return m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
 			return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
@@ -65,7 +65,7 @@ func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, 
 const setFuncTemplate = `
 // set{{ title .Name }}Func sets the function for {{ .Name }}
 func (m *{{ .MockName }}) set{{ title .Name }}Func(f {{ responseSignature .Inputs .Outputs }}) {
-	m.mocked.{{ .Name }}.fallback = f
+	m.mocked.{{ .Name }}.Fallback = f
 }`
 
 const setResponseTemplate = `
@@ -79,13 +79,13 @@ func (m *{{ .MockName }}) set{{ title .Name }}Response({{ range $i, $p := .Outpu
 const enableTemplate = `
 // enable{{ title .Name }}Mock turns the mock on
 func (m *{{ .MockName }}) enable{{ title .Name }}Mock() {
-	m.mocked.{{ title .Name }}.enabled = true
+	m.mocked.{{ title .Name }}.Enabled = true
 }`
 
 const disableTemplate = `
 // disable{{ title .Name }}Mock turns the mock off
 func (m *{{ .MockName }}) disable{{ title .Name }}Mock() {
-	m.mocked.{{ title .Name }}.enabled = false
+	m.mocked.{{ title .Name }}.Enabled = false
 }`
 
 const enqueueFuncTemplate = `
@@ -168,6 +168,7 @@ func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) 
 	headerTemplate := `package {{ .Importer }}
 
 import "github.com/jackclarke/GoStubGen/generated/{{ .Package }}"
+import "github.com/jackclarke/GoStubGen/stubs"
 
 ` + generateMethodConfig() + "\n\n" + generateMockStruct() + "\n\n" + generateFactoryFunc() + "\n"
 

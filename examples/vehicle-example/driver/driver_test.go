@@ -13,7 +13,6 @@ import (
 // TODO: spy
 // TODO: setResponseTimes
 // TODO: channels for background stuff
-// TODO: helpers into package so dont need to define
 // TODO: can things be more generic?
 
 func TestDriverDriveWithMock(t *testing.T) {
