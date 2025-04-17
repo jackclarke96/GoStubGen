@@ -40,7 +40,7 @@ func (d *Driver) drive() (int, error) {
 		return 0, fmt.Errorf("drive: failed to load cargo! %w", err)
 	}
 	fmt.Printf("%+v pieces of cargo retrieved!", cargo)
-	cargo, err = d.vehicle.LoadCargo([]string{"clothes", "toiletries", "electronics"})
+	cargo, err = d.vehicle.LoadCargo([]string{"clothes", "toiletries", "electronics", "more stuff"})
 	if err != nil {
 		return 0, fmt.Errorf("drive: failed to load second batch of cargo! %w", err)
 	}

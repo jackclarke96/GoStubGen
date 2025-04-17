@@ -43,6 +43,7 @@ const methodDividerTemplate = `
 const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
+	m.mocked.{{ title .Name }}.RecordCall({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 	if m.mocked.{{ title .Name }}.Enabled {
 		{{- if gt (len .Outputs) 0 }}
 		return m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
@@ -80,6 +81,25 @@ const enableTemplate = `
 // enable{{ title .Name }}Mock turns the mock on
 func (m *{{ .MockName }}) enable{{ title .Name }}Mock() {
 	m.mocked.{{ title .Name }}.Enabled = true
+}`
+
+const enableSpyTemplate = `
+// enable{{ title .Name }}Mock turns the spy on
+func (m *{{ .MockName }}) enable{{ title .Name }}Spy() {
+	m.mocked.{{ title .Name }}.SpyEnabled = true
+}`
+
+const getSpiedCallsTemplate = `
+// get{{ title .Name }}Calls returns recorded calls to {{ .Name }}
+func (m *{{ .MockName }}) get{{ title .Name }}Calls() []stubs.MethodCall {
+	return m.mocked.{{ title .Name }}.Calls()
+}
+`
+
+const disableSpyTemplate = `
+// enable{{ title .Name }}Mock turns the spy off
+func (m *{{ .MockName }}) disable{{ title .Name }}Spy() {
+	m.mocked.{{ title .Name }}.SpyEnabled = false
 }`
 
 const disableTemplate = `
@@ -220,6 +240,9 @@ import "github.com/jackclarke/GoStubGen/stubs"
 		}
 		// Always generate core + function enqueue templates
 		for _, tmplStr := range []string{
+			enableSpyTemplate,
+			getSpiedCallsTemplate,
+			disableSpyTemplate,
 			methodOverrideTemplate,
 			setFuncTemplate,
 			enableTemplate,

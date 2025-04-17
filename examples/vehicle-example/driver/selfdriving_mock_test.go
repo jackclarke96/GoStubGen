@@ -9,21 +9,21 @@ import (
 
 // mockSelfDrivingConfig stores mock flags and responses
 type mockSelfDrivingConfig struct {
-	GetTopSpeed      stubs.MethodConfig[func() int]
-	Accelerate       stubs.MethodConfig[func(int, string) (int, error)]
-	ChangeGears      stubs.MethodConfig[func(int) (int, int)]
+	IsMoving         stubs.MethodConfig[func() bool]
 	UpdateStatus     stubs.MethodConfig[func(vehicle.VehicleStatus) error]
 	Turn             stubs.MethodConfig[func(string) string]
-	Honk             stubs.MethodConfig[func(int)]
-	GetEngineSpecs   stubs.MethodConfig[func() (int, string)]
-	GetPassengers    stubs.MethodConfig[func() []string]
-	Telemetry        stubs.MethodConfig[func() map[string]float64]
 	Reverse          stubs.MethodConfig[func() (string, error)]
-	LoadCargo        stubs.MethodConfig[func([]string) (int, error)]
-	GetVehicleStatus stubs.MethodConfig[func() vehicle.VehicleStatus]
-	IsMoving         stubs.MethodConfig[func() bool]
-	ApplyBrakes      stubs.MethodConfig[func(float64) bool]
+	ChangeGears      stubs.MethodConfig[func(int) (int, int)]
+	Telemetry        stubs.MethodConfig[func() map[string]float64]
 	DriveSelf        stubs.MethodConfig[func(string) error]
+	GetPassengers    stubs.MethodConfig[func() []string]
+	Accelerate       stubs.MethodConfig[func(int, string) (int, error)]
+	Honk             stubs.MethodConfig[func(int)]
+	GetTopSpeed      stubs.MethodConfig[func() int]
+	LoadCargo        stubs.MethodConfig[func([]string) (int, error)]
+	ApplyBrakes      stubs.MethodConfig[func(float64) bool]
+	GetVehicleStatus stubs.MethodConfig[func() vehicle.VehicleStatus]
+	GetEngineSpecs   stubs.MethodConfig[func() (int, string)]
 }
 
 // mockSelfDriving embeds a concrete SelfDriving and its mocks
@@ -40,187 +40,101 @@ func newSelfDrivingMock(v vehicle.SelfDriving) *mockSelfDriving {
 	}
 }
 
-/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
+/* -------------------------- IsMoving Mock Helpers --------------------------- */
 
-// GetTopSpeed overrides the method to return the mock response
-func (m *mockSelfDriving) GetTopSpeed() int {
-	if m.mocked.GetTopSpeed.Enabled {
-		return m.mocked.GetTopSpeed.NextResponse(func() int {
-			return m.real.GetTopSpeed()
+// enableIsMovingMock turns the spy on
+func (m *mockSelfDriving) enableIsMovingSpy() {
+	m.mocked.IsMoving.SpyEnabled = true
+}
+
+// getIsMovingCalls returns recorded calls to IsMoving
+func (m *mockSelfDriving) getIsMovingCalls() []stubs.MethodCall {
+	return m.mocked.IsMoving.Calls()
+}
+
+// enableIsMovingMock turns the spy off
+func (m *mockSelfDriving) disableIsMovingSpy() {
+	m.mocked.IsMoving.SpyEnabled = false
+}
+
+// IsMoving overrides the method to return the mock response
+func (m *mockSelfDriving) IsMoving() bool {
+	m.mocked.IsMoving.RecordCall()
+	if m.mocked.IsMoving.Enabled {
+		return m.mocked.IsMoving.NextResponse(func() bool {
+			return m.real.IsMoving()
 		})()
 	}
-	return m.real.GetTopSpeed()
+	return m.real.IsMoving()
 }
 
-// setGetTopSpeedFunc sets the function for GetTopSpeed
-func (m *mockSelfDriving) setGetTopSpeedFunc(f func() int) {
-	m.mocked.GetTopSpeed.Fallback = f
+// setIsMovingFunc sets the function for IsMoving
+func (m *mockSelfDriving) setIsMovingFunc(f func() bool) {
+	m.mocked.IsMoving.Fallback = f
 }
 
-// enableGetTopSpeedMock turns the mock on
-func (m *mockSelfDriving) enableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.Enabled = true
+// enableIsMovingMock turns the mock on
+func (m *mockSelfDriving) enableIsMovingMock() {
+	m.mocked.IsMoving.Enabled = true
 }
 
-// disableGetTopSpeedMock turns the mock off
-func (m *mockSelfDriving) disableGetTopSpeedMock() {
-	m.mocked.GetTopSpeed.Enabled = false
+// disableIsMovingMock turns the mock off
+func (m *mockSelfDriving) disableIsMovingMock() {
+	m.mocked.IsMoving.Enabled = false
 }
 
-// enqueueGetTopSpeedResponseFunc enqueues a function response for GetTopSpeed
-func (m *mockSelfDriving) enqueueGetTopSpeedResponseFunc(f func() int) {
-	m.mocked.GetTopSpeed.EnqueueWithDelay(f, 0)
+// enqueueIsMovingResponseFunc enqueues a function response for IsMoving
+func (m *mockSelfDriving) enqueueIsMovingResponseFunc(f func() bool) {
+	m.mocked.IsMoving.EnqueueWithDelay(f, 0)
 }
 
-// enqueueGetTopSpeedResponseFuncWithDelay enqueues a function response with delay for GetTopSpeed
-func (m *mockSelfDriving) enqueueGetTopSpeedResponseFuncWithDelay(f func() int, d time.Duration) {
-	m.mocked.GetTopSpeed.EnqueueWithDelay(f, d)
+// enqueueIsMovingResponseFuncWithDelay enqueues a function response with delay for IsMoving
+func (m *mockSelfDriving) enqueueIsMovingResponseFuncWithDelay(f func() bool, d time.Duration) {
+	m.mocked.IsMoving.EnqueueWithDelay(f, d)
 }
 
-// setGetTopSpeedResponse sets the response for GetTopSpeed
-func (m *mockSelfDriving) setGetTopSpeedResponse(output0 int) {
-	m.setGetTopSpeedFunc(func() int {
+// setIsMovingResponse sets the response for IsMoving
+func (m *mockSelfDriving) setIsMovingResponse(output0 bool) {
+	m.setIsMovingFunc(func() bool {
 		return output0
 	})
 }
 
-// enqueueGetTopSpeedResponse enqueues a static response for GetTopSpeed
-func (m *mockSelfDriving) enqueueGetTopSpeedResponse(output0 int) {
-	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+// enqueueIsMovingResponse enqueues a static response for IsMoving
+func (m *mockSelfDriving) enqueueIsMovingResponse(output0 bool) {
+	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
 		return output0
 	}, 0)
 }
 
-// enqueueGetTopSpeedResponseWithDelay enqueues a static response with delay for GetTopSpeed
-func (m *mockSelfDriving) enqueueGetTopSpeedResponseWithDelay(output0 int, d time.Duration) {
-	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+// enqueueIsMovingResponseWithDelay enqueues a static response with delay for IsMoving
+func (m *mockSelfDriving) enqueueIsMovingResponseWithDelay(output0 bool, d time.Duration) {
+	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
 		time.Sleep(d)
 		return output0
-	}, d)
-}
-
-/* -------------------------- Accelerate Mock Helpers --------------------------- */
-
-// Accelerate overrides the method to return the mock response
-func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
-	if m.mocked.Accelerate.Enabled {
-		return m.mocked.Accelerate.NextResponse(func(speed int, unit string) (int, error) {
-			return m.real.Accelerate(speed, unit)
-		})(speed, unit)
-	}
-	return m.real.Accelerate(speed, unit)
-}
-
-// setAccelerateFunc sets the function for Accelerate
-func (m *mockSelfDriving) setAccelerateFunc(f func(int, string) (int, error)) {
-	m.mocked.Accelerate.Fallback = f
-}
-
-// enableAccelerateMock turns the mock on
-func (m *mockSelfDriving) enableAccelerateMock() {
-	m.mocked.Accelerate.Enabled = true
-}
-
-// disableAccelerateMock turns the mock off
-func (m *mockSelfDriving) disableAccelerateMock() {
-	m.mocked.Accelerate.Enabled = false
-}
-
-// enqueueAccelerateResponseFunc enqueues a function response for Accelerate
-func (m *mockSelfDriving) enqueueAccelerateResponseFunc(f func(int, string) (int, error)) {
-	m.mocked.Accelerate.EnqueueWithDelay(f, 0)
-}
-
-// enqueueAccelerateResponseFuncWithDelay enqueues a function response with delay for Accelerate
-func (m *mockSelfDriving) enqueueAccelerateResponseFuncWithDelay(f func(int, string) (int, error), d time.Duration) {
-	m.mocked.Accelerate.EnqueueWithDelay(f, d)
-}
-
-// setAccelerateResponse sets the response for Accelerate
-func (m *mockSelfDriving) setAccelerateResponse(output0 int, output1 error) {
-	m.setAccelerateFunc(func(int, string) (int, error) {
-		return output0, output1
-	})
-}
-
-// enqueueAccelerateResponse enqueues a static response for Accelerate
-func (m *mockSelfDriving) enqueueAccelerateResponse(output0 int, output1 error) {
-	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
-		return output0, output1
-	}, 0)
-}
-
-// enqueueAccelerateResponseWithDelay enqueues a static response with delay for Accelerate
-func (m *mockSelfDriving) enqueueAccelerateResponseWithDelay(output0 int, output1 error, d time.Duration) {
-	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
-		time.Sleep(d)
-		return output0, output1
-	}, d)
-}
-
-/* -------------------------- ChangeGears Mock Helpers --------------------------- */
-
-// ChangeGears overrides the method to return the mock response
-func (m *mockSelfDriving) ChangeGears(gear int) (int, int) {
-	if m.mocked.ChangeGears.Enabled {
-		return m.mocked.ChangeGears.NextResponse(func(gear int) (int, int) {
-			return m.real.ChangeGears(gear)
-		})(gear)
-	}
-	return m.real.ChangeGears(gear)
-}
-
-// setChangeGearsFunc sets the function for ChangeGears
-func (m *mockSelfDriving) setChangeGearsFunc(f func(int) (int, int)) {
-	m.mocked.ChangeGears.Fallback = f
-}
-
-// enableChangeGearsMock turns the mock on
-func (m *mockSelfDriving) enableChangeGearsMock() {
-	m.mocked.ChangeGears.Enabled = true
-}
-
-// disableChangeGearsMock turns the mock off
-func (m *mockSelfDriving) disableChangeGearsMock() {
-	m.mocked.ChangeGears.Enabled = false
-}
-
-// enqueueChangeGearsResponseFunc enqueues a function response for ChangeGears
-func (m *mockSelfDriving) enqueueChangeGearsResponseFunc(f func(int) (int, int)) {
-	m.mocked.ChangeGears.EnqueueWithDelay(f, 0)
-}
-
-// enqueueChangeGearsResponseFuncWithDelay enqueues a function response with delay for ChangeGears
-func (m *mockSelfDriving) enqueueChangeGearsResponseFuncWithDelay(f func(int) (int, int), d time.Duration) {
-	m.mocked.ChangeGears.EnqueueWithDelay(f, d)
-}
-
-// setChangeGearsResponse sets the response for ChangeGears
-func (m *mockSelfDriving) setChangeGearsResponse(output0 int, output1 int) {
-	m.setChangeGearsFunc(func(int) (int, int) {
-		return output0, output1
-	})
-}
-
-// enqueueChangeGearsResponse enqueues a static response for ChangeGears
-func (m *mockSelfDriving) enqueueChangeGearsResponse(output0 int, output1 int) {
-	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
-		return output0, output1
-	}, 0)
-}
-
-// enqueueChangeGearsResponseWithDelay enqueues a static response with delay for ChangeGears
-func (m *mockSelfDriving) enqueueChangeGearsResponseWithDelay(output0 int, output1 int, d time.Duration) {
-	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
-		time.Sleep(d)
-		return output0, output1
 	}, d)
 }
 
 /* -------------------------- UpdateStatus Mock Helpers --------------------------- */
 
+// enableUpdateStatusMock turns the spy on
+func (m *mockSelfDriving) enableUpdateStatusSpy() {
+	m.mocked.UpdateStatus.SpyEnabled = true
+}
+
+// getUpdateStatusCalls returns recorded calls to UpdateStatus
+func (m *mockSelfDriving) getUpdateStatusCalls() []stubs.MethodCall {
+	return m.mocked.UpdateStatus.Calls()
+}
+
+// enableUpdateStatusMock turns the spy off
+func (m *mockSelfDriving) disableUpdateStatusSpy() {
+	m.mocked.UpdateStatus.SpyEnabled = false
+}
+
 // UpdateStatus overrides the method to return the mock response
 func (m *mockSelfDriving) UpdateStatus(status vehicle.VehicleStatus) error {
+	m.mocked.UpdateStatus.RecordCall(status)
 	if m.mocked.UpdateStatus.Enabled {
 		return m.mocked.UpdateStatus.NextResponse(func(status vehicle.VehicleStatus) error {
 			return m.real.UpdateStatus(status)
@@ -278,8 +192,24 @@ func (m *mockSelfDriving) enqueueUpdateStatusResponseWithDelay(output0 error, d 
 
 /* -------------------------- Turn Mock Helpers --------------------------- */
 
+// enableTurnMock turns the spy on
+func (m *mockSelfDriving) enableTurnSpy() {
+	m.mocked.Turn.SpyEnabled = true
+}
+
+// getTurnCalls returns recorded calls to Turn
+func (m *mockSelfDriving) getTurnCalls() []stubs.MethodCall {
+	return m.mocked.Turn.Calls()
+}
+
+// enableTurnMock turns the spy off
+func (m *mockSelfDriving) disableTurnSpy() {
+	m.mocked.Turn.SpyEnabled = false
+}
+
 // Turn overrides the method to return the mock response
 func (m *mockSelfDriving) Turn(dir string) string {
+	m.mocked.Turn.RecordCall(dir)
 	if m.mocked.Turn.Enabled {
 		return m.mocked.Turn.NextResponse(func(dir string) string {
 			return m.real.Turn(dir)
@@ -335,225 +265,26 @@ func (m *mockSelfDriving) enqueueTurnResponseWithDelay(output0 string, d time.Du
 	}, d)
 }
 
-/* -------------------------- Honk Mock Helpers --------------------------- */
-
-// Honk overrides the method to return the mock response
-func (m *mockSelfDriving) Honk(times int) {
-	if m.mocked.Honk.Enabled {
-		m.mocked.Honk.NextResponse(func(times int) {
-			m.real.Honk(times)
-		})(times)
-		return
-	}
-	m.real.Honk(times)
-}
-
-// setHonkFunc sets the function for Honk
-func (m *mockSelfDriving) setHonkFunc(f func(int)) {
-	m.mocked.Honk.Fallback = f
-}
-
-// enableHonkMock turns the mock on
-func (m *mockSelfDriving) enableHonkMock() {
-	m.mocked.Honk.Enabled = true
-}
-
-// disableHonkMock turns the mock off
-func (m *mockSelfDriving) disableHonkMock() {
-	m.mocked.Honk.Enabled = false
-}
-
-// enqueueHonkResponseFunc enqueues a function response for Honk
-func (m *mockSelfDriving) enqueueHonkResponseFunc(f func(int)) {
-	m.mocked.Honk.EnqueueWithDelay(f, 0)
-}
-
-// enqueueHonkResponseFuncWithDelay enqueues a function response with delay for Honk
-func (m *mockSelfDriving) enqueueHonkResponseFuncWithDelay(f func(int), d time.Duration) {
-	m.mocked.Honk.EnqueueWithDelay(f, d)
-}
-
-/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
-
-// GetEngineSpecs overrides the method to return the mock response
-func (m *mockSelfDriving) GetEngineSpecs() (int, string) {
-	if m.mocked.GetEngineSpecs.Enabled {
-		return m.mocked.GetEngineSpecs.NextResponse(func() (int, string) {
-			return m.real.GetEngineSpecs()
-		})()
-	}
-	return m.real.GetEngineSpecs()
-}
-
-// setGetEngineSpecsFunc sets the function for GetEngineSpecs
-func (m *mockSelfDriving) setGetEngineSpecsFunc(f func() (int, string)) {
-	m.mocked.GetEngineSpecs.Fallback = f
-}
-
-// enableGetEngineSpecsMock turns the mock on
-func (m *mockSelfDriving) enableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.Enabled = true
-}
-
-// disableGetEngineSpecsMock turns the mock off
-func (m *mockSelfDriving) disableGetEngineSpecsMock() {
-	m.mocked.GetEngineSpecs.Enabled = false
-}
-
-// enqueueGetEngineSpecsResponseFunc enqueues a function response for GetEngineSpecs
-func (m *mockSelfDriving) enqueueGetEngineSpecsResponseFunc(f func() (int, string)) {
-	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, 0)
-}
-
-// enqueueGetEngineSpecsResponseFuncWithDelay enqueues a function response with delay for GetEngineSpecs
-func (m *mockSelfDriving) enqueueGetEngineSpecsResponseFuncWithDelay(f func() (int, string), d time.Duration) {
-	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, d)
-}
-
-// setGetEngineSpecsResponse sets the response for GetEngineSpecs
-func (m *mockSelfDriving) setGetEngineSpecsResponse(output0 int, output1 string) {
-	m.setGetEngineSpecsFunc(func() (int, string) {
-		return output0, output1
-	})
-}
-
-// enqueueGetEngineSpecsResponse enqueues a static response for GetEngineSpecs
-func (m *mockSelfDriving) enqueueGetEngineSpecsResponse(output0 int, output1 string) {
-	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
-		return output0, output1
-	}, 0)
-}
-
-// enqueueGetEngineSpecsResponseWithDelay enqueues a static response with delay for GetEngineSpecs
-func (m *mockSelfDriving) enqueueGetEngineSpecsResponseWithDelay(output0 int, output1 string, d time.Duration) {
-	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
-		time.Sleep(d)
-		return output0, output1
-	}, d)
-}
-
-/* -------------------------- GetPassengers Mock Helpers --------------------------- */
-
-// GetPassengers overrides the method to return the mock response
-func (m *mockSelfDriving) GetPassengers() []string {
-	if m.mocked.GetPassengers.Enabled {
-		return m.mocked.GetPassengers.NextResponse(func() []string {
-			return m.real.GetPassengers()
-		})()
-	}
-	return m.real.GetPassengers()
-}
-
-// setGetPassengersFunc sets the function for GetPassengers
-func (m *mockSelfDriving) setGetPassengersFunc(f func() []string) {
-	m.mocked.GetPassengers.Fallback = f
-}
-
-// enableGetPassengersMock turns the mock on
-func (m *mockSelfDriving) enableGetPassengersMock() {
-	m.mocked.GetPassengers.Enabled = true
-}
-
-// disableGetPassengersMock turns the mock off
-func (m *mockSelfDriving) disableGetPassengersMock() {
-	m.mocked.GetPassengers.Enabled = false
-}
-
-// enqueueGetPassengersResponseFunc enqueues a function response for GetPassengers
-func (m *mockSelfDriving) enqueueGetPassengersResponseFunc(f func() []string) {
-	m.mocked.GetPassengers.EnqueueWithDelay(f, 0)
-}
-
-// enqueueGetPassengersResponseFuncWithDelay enqueues a function response with delay for GetPassengers
-func (m *mockSelfDriving) enqueueGetPassengersResponseFuncWithDelay(f func() []string, d time.Duration) {
-	m.mocked.GetPassengers.EnqueueWithDelay(f, d)
-}
-
-// setGetPassengersResponse sets the response for GetPassengers
-func (m *mockSelfDriving) setGetPassengersResponse(output0 []string) {
-	m.setGetPassengersFunc(func() []string {
-		return output0
-	})
-}
-
-// enqueueGetPassengersResponse enqueues a static response for GetPassengers
-func (m *mockSelfDriving) enqueueGetPassengersResponse(output0 []string) {
-	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
-		return output0
-	}, 0)
-}
-
-// enqueueGetPassengersResponseWithDelay enqueues a static response with delay for GetPassengers
-func (m *mockSelfDriving) enqueueGetPassengersResponseWithDelay(output0 []string, d time.Duration) {
-	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
-		time.Sleep(d)
-		return output0
-	}, d)
-}
-
-/* -------------------------- Telemetry Mock Helpers --------------------------- */
-
-// Telemetry overrides the method to return the mock response
-func (m *mockSelfDriving) Telemetry() map[string]float64 {
-	if m.mocked.Telemetry.Enabled {
-		return m.mocked.Telemetry.NextResponse(func() map[string]float64 {
-			return m.real.Telemetry()
-		})()
-	}
-	return m.real.Telemetry()
-}
-
-// setTelemetryFunc sets the function for Telemetry
-func (m *mockSelfDriving) setTelemetryFunc(f func() map[string]float64) {
-	m.mocked.Telemetry.Fallback = f
-}
-
-// enableTelemetryMock turns the mock on
-func (m *mockSelfDriving) enableTelemetryMock() {
-	m.mocked.Telemetry.Enabled = true
-}
-
-// disableTelemetryMock turns the mock off
-func (m *mockSelfDriving) disableTelemetryMock() {
-	m.mocked.Telemetry.Enabled = false
-}
-
-// enqueueTelemetryResponseFunc enqueues a function response for Telemetry
-func (m *mockSelfDriving) enqueueTelemetryResponseFunc(f func() map[string]float64) {
-	m.mocked.Telemetry.EnqueueWithDelay(f, 0)
-}
-
-// enqueueTelemetryResponseFuncWithDelay enqueues a function response with delay for Telemetry
-func (m *mockSelfDriving) enqueueTelemetryResponseFuncWithDelay(f func() map[string]float64, d time.Duration) {
-	m.mocked.Telemetry.EnqueueWithDelay(f, d)
-}
-
-// setTelemetryResponse sets the response for Telemetry
-func (m *mockSelfDriving) setTelemetryResponse(output0 map[string]float64) {
-	m.setTelemetryFunc(func() map[string]float64 {
-		return output0
-	})
-}
-
-// enqueueTelemetryResponse enqueues a static response for Telemetry
-func (m *mockSelfDriving) enqueueTelemetryResponse(output0 map[string]float64) {
-	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
-		return output0
-	}, 0)
-}
-
-// enqueueTelemetryResponseWithDelay enqueues a static response with delay for Telemetry
-func (m *mockSelfDriving) enqueueTelemetryResponseWithDelay(output0 map[string]float64, d time.Duration) {
-	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
-		time.Sleep(d)
-		return output0
-	}, d)
-}
-
 /* -------------------------- Reverse Mock Helpers --------------------------- */
+
+// enableReverseMock turns the spy on
+func (m *mockSelfDriving) enableReverseSpy() {
+	m.mocked.Reverse.SpyEnabled = true
+}
+
+// getReverseCalls returns recorded calls to Reverse
+func (m *mockSelfDriving) getReverseCalls() []stubs.MethodCall {
+	return m.mocked.Reverse.Calls()
+}
+
+// enableReverseMock turns the spy off
+func (m *mockSelfDriving) disableReverseSpy() {
+	m.mocked.Reverse.SpyEnabled = false
+}
 
 // Reverse overrides the method to return the mock response
 func (m *mockSelfDriving) Reverse() (string, error) {
+	m.mocked.Reverse.RecordCall()
 	if m.mocked.Reverse.Enabled {
 		return m.mocked.Reverse.NextResponse(func() (string, error) {
 			return m.real.Reverse()
@@ -609,10 +340,530 @@ func (m *mockSelfDriving) enqueueReverseResponseWithDelay(output0 string, output
 	}, d)
 }
 
+/* -------------------------- ChangeGears Mock Helpers --------------------------- */
+
+// enableChangeGearsMock turns the spy on
+func (m *mockSelfDriving) enableChangeGearsSpy() {
+	m.mocked.ChangeGears.SpyEnabled = true
+}
+
+// getChangeGearsCalls returns recorded calls to ChangeGears
+func (m *mockSelfDriving) getChangeGearsCalls() []stubs.MethodCall {
+	return m.mocked.ChangeGears.Calls()
+}
+
+// enableChangeGearsMock turns the spy off
+func (m *mockSelfDriving) disableChangeGearsSpy() {
+	m.mocked.ChangeGears.SpyEnabled = false
+}
+
+// ChangeGears overrides the method to return the mock response
+func (m *mockSelfDriving) ChangeGears(gear int) (int, int) {
+	m.mocked.ChangeGears.RecordCall(gear)
+	if m.mocked.ChangeGears.Enabled {
+		return m.mocked.ChangeGears.NextResponse(func(gear int) (int, int) {
+			return m.real.ChangeGears(gear)
+		})(gear)
+	}
+	return m.real.ChangeGears(gear)
+}
+
+// setChangeGearsFunc sets the function for ChangeGears
+func (m *mockSelfDriving) setChangeGearsFunc(f func(int) (int, int)) {
+	m.mocked.ChangeGears.Fallback = f
+}
+
+// enableChangeGearsMock turns the mock on
+func (m *mockSelfDriving) enableChangeGearsMock() {
+	m.mocked.ChangeGears.Enabled = true
+}
+
+// disableChangeGearsMock turns the mock off
+func (m *mockSelfDriving) disableChangeGearsMock() {
+	m.mocked.ChangeGears.Enabled = false
+}
+
+// enqueueChangeGearsResponseFunc enqueues a function response for ChangeGears
+func (m *mockSelfDriving) enqueueChangeGearsResponseFunc(f func(int) (int, int)) {
+	m.mocked.ChangeGears.EnqueueWithDelay(f, 0)
+}
+
+// enqueueChangeGearsResponseFuncWithDelay enqueues a function response with delay for ChangeGears
+func (m *mockSelfDriving) enqueueChangeGearsResponseFuncWithDelay(f func(int) (int, int), d time.Duration) {
+	m.mocked.ChangeGears.EnqueueWithDelay(f, d)
+}
+
+// setChangeGearsResponse sets the response for ChangeGears
+func (m *mockSelfDriving) setChangeGearsResponse(output0 int, output1 int) {
+	m.setChangeGearsFunc(func(int) (int, int) {
+		return output0, output1
+	})
+}
+
+// enqueueChangeGearsResponse enqueues a static response for ChangeGears
+func (m *mockSelfDriving) enqueueChangeGearsResponse(output0 int, output1 int) {
+	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueChangeGearsResponseWithDelay enqueues a static response with delay for ChangeGears
+func (m *mockSelfDriving) enqueueChangeGearsResponseWithDelay(output0 int, output1 int, d time.Duration) {
+	m.mocked.ChangeGears.EnqueueWithDelay(func(int) (int, int) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
+}
+
+/* -------------------------- Telemetry Mock Helpers --------------------------- */
+
+// enableTelemetryMock turns the spy on
+func (m *mockSelfDriving) enableTelemetrySpy() {
+	m.mocked.Telemetry.SpyEnabled = true
+}
+
+// getTelemetryCalls returns recorded calls to Telemetry
+func (m *mockSelfDriving) getTelemetryCalls() []stubs.MethodCall {
+	return m.mocked.Telemetry.Calls()
+}
+
+// enableTelemetryMock turns the spy off
+func (m *mockSelfDriving) disableTelemetrySpy() {
+	m.mocked.Telemetry.SpyEnabled = false
+}
+
+// Telemetry overrides the method to return the mock response
+func (m *mockSelfDriving) Telemetry() map[string]float64 {
+	m.mocked.Telemetry.RecordCall()
+	if m.mocked.Telemetry.Enabled {
+		return m.mocked.Telemetry.NextResponse(func() map[string]float64 {
+			return m.real.Telemetry()
+		})()
+	}
+	return m.real.Telemetry()
+}
+
+// setTelemetryFunc sets the function for Telemetry
+func (m *mockSelfDriving) setTelemetryFunc(f func() map[string]float64) {
+	m.mocked.Telemetry.Fallback = f
+}
+
+// enableTelemetryMock turns the mock on
+func (m *mockSelfDriving) enableTelemetryMock() {
+	m.mocked.Telemetry.Enabled = true
+}
+
+// disableTelemetryMock turns the mock off
+func (m *mockSelfDriving) disableTelemetryMock() {
+	m.mocked.Telemetry.Enabled = false
+}
+
+// enqueueTelemetryResponseFunc enqueues a function response for Telemetry
+func (m *mockSelfDriving) enqueueTelemetryResponseFunc(f func() map[string]float64) {
+	m.mocked.Telemetry.EnqueueWithDelay(f, 0)
+}
+
+// enqueueTelemetryResponseFuncWithDelay enqueues a function response with delay for Telemetry
+func (m *mockSelfDriving) enqueueTelemetryResponseFuncWithDelay(f func() map[string]float64, d time.Duration) {
+	m.mocked.Telemetry.EnqueueWithDelay(f, d)
+}
+
+// setTelemetryResponse sets the response for Telemetry
+func (m *mockSelfDriving) setTelemetryResponse(output0 map[string]float64) {
+	m.setTelemetryFunc(func() map[string]float64 {
+		return output0
+	})
+}
+
+// enqueueTelemetryResponse enqueues a static response for Telemetry
+func (m *mockSelfDriving) enqueueTelemetryResponse(output0 map[string]float64) {
+	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
+		return output0
+	}, 0)
+}
+
+// enqueueTelemetryResponseWithDelay enqueues a static response with delay for Telemetry
+func (m *mockSelfDriving) enqueueTelemetryResponseWithDelay(output0 map[string]float64, d time.Duration) {
+	m.mocked.Telemetry.EnqueueWithDelay(func() map[string]float64 {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- DriveSelf Mock Helpers --------------------------- */
+
+// enableDriveSelfMock turns the spy on
+func (m *mockSelfDriving) enableDriveSelfSpy() {
+	m.mocked.DriveSelf.SpyEnabled = true
+}
+
+// getDriveSelfCalls returns recorded calls to DriveSelf
+func (m *mockSelfDriving) getDriveSelfCalls() []stubs.MethodCall {
+	return m.mocked.DriveSelf.Calls()
+}
+
+// enableDriveSelfMock turns the spy off
+func (m *mockSelfDriving) disableDriveSelfSpy() {
+	m.mocked.DriveSelf.SpyEnabled = false
+}
+
+// DriveSelf overrides the method to return the mock response
+func (m *mockSelfDriving) DriveSelf(endLocation string) error {
+	m.mocked.DriveSelf.RecordCall(endLocation)
+	if m.mocked.DriveSelf.Enabled {
+		return m.mocked.DriveSelf.NextResponse(func(endLocation string) error {
+			return m.real.DriveSelf(endLocation)
+		})(endLocation)
+	}
+	return m.real.DriveSelf(endLocation)
+}
+
+// setDriveSelfFunc sets the function for DriveSelf
+func (m *mockSelfDriving) setDriveSelfFunc(f func(string) error) {
+	m.mocked.DriveSelf.Fallback = f
+}
+
+// enableDriveSelfMock turns the mock on
+func (m *mockSelfDriving) enableDriveSelfMock() {
+	m.mocked.DriveSelf.Enabled = true
+}
+
+// disableDriveSelfMock turns the mock off
+func (m *mockSelfDriving) disableDriveSelfMock() {
+	m.mocked.DriveSelf.Enabled = false
+}
+
+// enqueueDriveSelfResponseFunc enqueues a function response for DriveSelf
+func (m *mockSelfDriving) enqueueDriveSelfResponseFunc(f func(string) error) {
+	m.mocked.DriveSelf.EnqueueWithDelay(f, 0)
+}
+
+// enqueueDriveSelfResponseFuncWithDelay enqueues a function response with delay for DriveSelf
+func (m *mockSelfDriving) enqueueDriveSelfResponseFuncWithDelay(f func(string) error, d time.Duration) {
+	m.mocked.DriveSelf.EnqueueWithDelay(f, d)
+}
+
+// setDriveSelfResponse sets the response for DriveSelf
+func (m *mockSelfDriving) setDriveSelfResponse(output0 error) {
+	m.setDriveSelfFunc(func(string) error {
+		return output0
+	})
+}
+
+// enqueueDriveSelfResponse enqueues a static response for DriveSelf
+func (m *mockSelfDriving) enqueueDriveSelfResponse(output0 error) {
+	m.mocked.DriveSelf.EnqueueWithDelay(func(string) error {
+		return output0
+	}, 0)
+}
+
+// enqueueDriveSelfResponseWithDelay enqueues a static response with delay for DriveSelf
+func (m *mockSelfDriving) enqueueDriveSelfResponseWithDelay(output0 error, d time.Duration) {
+	m.mocked.DriveSelf.EnqueueWithDelay(func(string) error {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- GetPassengers Mock Helpers --------------------------- */
+
+// enableGetPassengersMock turns the spy on
+func (m *mockSelfDriving) enableGetPassengersSpy() {
+	m.mocked.GetPassengers.SpyEnabled = true
+}
+
+// getGetPassengersCalls returns recorded calls to GetPassengers
+func (m *mockSelfDriving) getGetPassengersCalls() []stubs.MethodCall {
+	return m.mocked.GetPassengers.Calls()
+}
+
+// enableGetPassengersMock turns the spy off
+func (m *mockSelfDriving) disableGetPassengersSpy() {
+	m.mocked.GetPassengers.SpyEnabled = false
+}
+
+// GetPassengers overrides the method to return the mock response
+func (m *mockSelfDriving) GetPassengers() []string {
+	m.mocked.GetPassengers.RecordCall()
+	if m.mocked.GetPassengers.Enabled {
+		return m.mocked.GetPassengers.NextResponse(func() []string {
+			return m.real.GetPassengers()
+		})()
+	}
+	return m.real.GetPassengers()
+}
+
+// setGetPassengersFunc sets the function for GetPassengers
+func (m *mockSelfDriving) setGetPassengersFunc(f func() []string) {
+	m.mocked.GetPassengers.Fallback = f
+}
+
+// enableGetPassengersMock turns the mock on
+func (m *mockSelfDriving) enableGetPassengersMock() {
+	m.mocked.GetPassengers.Enabled = true
+}
+
+// disableGetPassengersMock turns the mock off
+func (m *mockSelfDriving) disableGetPassengersMock() {
+	m.mocked.GetPassengers.Enabled = false
+}
+
+// enqueueGetPassengersResponseFunc enqueues a function response for GetPassengers
+func (m *mockSelfDriving) enqueueGetPassengersResponseFunc(f func() []string) {
+	m.mocked.GetPassengers.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetPassengersResponseFuncWithDelay enqueues a function response with delay for GetPassengers
+func (m *mockSelfDriving) enqueueGetPassengersResponseFuncWithDelay(f func() []string, d time.Duration) {
+	m.mocked.GetPassengers.EnqueueWithDelay(f, d)
+}
+
+// setGetPassengersResponse sets the response for GetPassengers
+func (m *mockSelfDriving) setGetPassengersResponse(output0 []string) {
+	m.setGetPassengersFunc(func() []string {
+		return output0
+	})
+}
+
+// enqueueGetPassengersResponse enqueues a static response for GetPassengers
+func (m *mockSelfDriving) enqueueGetPassengersResponse(output0 []string) {
+	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
+		return output0
+	}, 0)
+}
+
+// enqueueGetPassengersResponseWithDelay enqueues a static response with delay for GetPassengers
+func (m *mockSelfDriving) enqueueGetPassengersResponseWithDelay(output0 []string, d time.Duration) {
+	m.mocked.GetPassengers.EnqueueWithDelay(func() []string {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
+/* -------------------------- Accelerate Mock Helpers --------------------------- */
+
+// enableAccelerateMock turns the spy on
+func (m *mockSelfDriving) enableAccelerateSpy() {
+	m.mocked.Accelerate.SpyEnabled = true
+}
+
+// getAccelerateCalls returns recorded calls to Accelerate
+func (m *mockSelfDriving) getAccelerateCalls() []stubs.MethodCall {
+	return m.mocked.Accelerate.Calls()
+}
+
+// enableAccelerateMock turns the spy off
+func (m *mockSelfDriving) disableAccelerateSpy() {
+	m.mocked.Accelerate.SpyEnabled = false
+}
+
+// Accelerate overrides the method to return the mock response
+func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
+	m.mocked.Accelerate.RecordCall(speed, unit)
+	if m.mocked.Accelerate.Enabled {
+		return m.mocked.Accelerate.NextResponse(func(speed int, unit string) (int, error) {
+			return m.real.Accelerate(speed, unit)
+		})(speed, unit)
+	}
+	return m.real.Accelerate(speed, unit)
+}
+
+// setAccelerateFunc sets the function for Accelerate
+func (m *mockSelfDriving) setAccelerateFunc(f func(int, string) (int, error)) {
+	m.mocked.Accelerate.Fallback = f
+}
+
+// enableAccelerateMock turns the mock on
+func (m *mockSelfDriving) enableAccelerateMock() {
+	m.mocked.Accelerate.Enabled = true
+}
+
+// disableAccelerateMock turns the mock off
+func (m *mockSelfDriving) disableAccelerateMock() {
+	m.mocked.Accelerate.Enabled = false
+}
+
+// enqueueAccelerateResponseFunc enqueues a function response for Accelerate
+func (m *mockSelfDriving) enqueueAccelerateResponseFunc(f func(int, string) (int, error)) {
+	m.mocked.Accelerate.EnqueueWithDelay(f, 0)
+}
+
+// enqueueAccelerateResponseFuncWithDelay enqueues a function response with delay for Accelerate
+func (m *mockSelfDriving) enqueueAccelerateResponseFuncWithDelay(f func(int, string) (int, error), d time.Duration) {
+	m.mocked.Accelerate.EnqueueWithDelay(f, d)
+}
+
+// setAccelerateResponse sets the response for Accelerate
+func (m *mockSelfDriving) setAccelerateResponse(output0 int, output1 error) {
+	m.setAccelerateFunc(func(int, string) (int, error) {
+		return output0, output1
+	})
+}
+
+// enqueueAccelerateResponse enqueues a static response for Accelerate
+func (m *mockSelfDriving) enqueueAccelerateResponse(output0 int, output1 error) {
+	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueAccelerateResponseWithDelay enqueues a static response with delay for Accelerate
+func (m *mockSelfDriving) enqueueAccelerateResponseWithDelay(output0 int, output1 error, d time.Duration) {
+	m.mocked.Accelerate.EnqueueWithDelay(func(int, string) (int, error) {
+		time.Sleep(d)
+		return output0, output1
+	}, d)
+}
+
+/* -------------------------- Honk Mock Helpers --------------------------- */
+
+// enableHonkMock turns the spy on
+func (m *mockSelfDriving) enableHonkSpy() {
+	m.mocked.Honk.SpyEnabled = true
+}
+
+// getHonkCalls returns recorded calls to Honk
+func (m *mockSelfDriving) getHonkCalls() []stubs.MethodCall {
+	return m.mocked.Honk.Calls()
+}
+
+// enableHonkMock turns the spy off
+func (m *mockSelfDriving) disableHonkSpy() {
+	m.mocked.Honk.SpyEnabled = false
+}
+
+// Honk overrides the method to return the mock response
+func (m *mockSelfDriving) Honk(times int) {
+	m.mocked.Honk.RecordCall(times)
+	if m.mocked.Honk.Enabled {
+		m.mocked.Honk.NextResponse(func(times int) {
+			m.real.Honk(times)
+		})(times)
+		return
+	}
+	m.real.Honk(times)
+}
+
+// setHonkFunc sets the function for Honk
+func (m *mockSelfDriving) setHonkFunc(f func(int)) {
+	m.mocked.Honk.Fallback = f
+}
+
+// enableHonkMock turns the mock on
+func (m *mockSelfDriving) enableHonkMock() {
+	m.mocked.Honk.Enabled = true
+}
+
+// disableHonkMock turns the mock off
+func (m *mockSelfDriving) disableHonkMock() {
+	m.mocked.Honk.Enabled = false
+}
+
+// enqueueHonkResponseFunc enqueues a function response for Honk
+func (m *mockSelfDriving) enqueueHonkResponseFunc(f func(int)) {
+	m.mocked.Honk.EnqueueWithDelay(f, 0)
+}
+
+// enqueueHonkResponseFuncWithDelay enqueues a function response with delay for Honk
+func (m *mockSelfDriving) enqueueHonkResponseFuncWithDelay(f func(int), d time.Duration) {
+	m.mocked.Honk.EnqueueWithDelay(f, d)
+}
+
+/* -------------------------- GetTopSpeed Mock Helpers --------------------------- */
+
+// enableGetTopSpeedMock turns the spy on
+func (m *mockSelfDriving) enableGetTopSpeedSpy() {
+	m.mocked.GetTopSpeed.SpyEnabled = true
+}
+
+// getGetTopSpeedCalls returns recorded calls to GetTopSpeed
+func (m *mockSelfDriving) getGetTopSpeedCalls() []stubs.MethodCall {
+	return m.mocked.GetTopSpeed.Calls()
+}
+
+// enableGetTopSpeedMock turns the spy off
+func (m *mockSelfDriving) disableGetTopSpeedSpy() {
+	m.mocked.GetTopSpeed.SpyEnabled = false
+}
+
+// GetTopSpeed overrides the method to return the mock response
+func (m *mockSelfDriving) GetTopSpeed() int {
+	m.mocked.GetTopSpeed.RecordCall()
+	if m.mocked.GetTopSpeed.Enabled {
+		return m.mocked.GetTopSpeed.NextResponse(func() int {
+			return m.real.GetTopSpeed()
+		})()
+	}
+	return m.real.GetTopSpeed()
+}
+
+// setGetTopSpeedFunc sets the function for GetTopSpeed
+func (m *mockSelfDriving) setGetTopSpeedFunc(f func() int) {
+	m.mocked.GetTopSpeed.Fallback = f
+}
+
+// enableGetTopSpeedMock turns the mock on
+func (m *mockSelfDriving) enableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.Enabled = true
+}
+
+// disableGetTopSpeedMock turns the mock off
+func (m *mockSelfDriving) disableGetTopSpeedMock() {
+	m.mocked.GetTopSpeed.Enabled = false
+}
+
+// enqueueGetTopSpeedResponseFunc enqueues a function response for GetTopSpeed
+func (m *mockSelfDriving) enqueueGetTopSpeedResponseFunc(f func() int) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetTopSpeedResponseFuncWithDelay enqueues a function response with delay for GetTopSpeed
+func (m *mockSelfDriving) enqueueGetTopSpeedResponseFuncWithDelay(f func() int, d time.Duration) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(f, d)
+}
+
+// setGetTopSpeedResponse sets the response for GetTopSpeed
+func (m *mockSelfDriving) setGetTopSpeedResponse(output0 int) {
+	m.setGetTopSpeedFunc(func() int {
+		return output0
+	})
+}
+
+// enqueueGetTopSpeedResponse enqueues a static response for GetTopSpeed
+func (m *mockSelfDriving) enqueueGetTopSpeedResponse(output0 int) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+		return output0
+	}, 0)
+}
+
+// enqueueGetTopSpeedResponseWithDelay enqueues a static response with delay for GetTopSpeed
+func (m *mockSelfDriving) enqueueGetTopSpeedResponseWithDelay(output0 int, d time.Duration) {
+	m.mocked.GetTopSpeed.EnqueueWithDelay(func() int {
+		time.Sleep(d)
+		return output0
+	}, d)
+}
+
 /* -------------------------- LoadCargo Mock Helpers --------------------------- */
+
+// enableLoadCargoMock turns the spy on
+func (m *mockSelfDriving) enableLoadCargoSpy() {
+	m.mocked.LoadCargo.SpyEnabled = true
+}
+
+// getLoadCargoCalls returns recorded calls to LoadCargo
+func (m *mockSelfDriving) getLoadCargoCalls() []stubs.MethodCall {
+	return m.mocked.LoadCargo.Calls()
+}
+
+// enableLoadCargoMock turns the spy off
+func (m *mockSelfDriving) disableLoadCargoSpy() {
+	m.mocked.LoadCargo.SpyEnabled = false
+}
 
 // LoadCargo overrides the method to return the mock response
 func (m *mockSelfDriving) LoadCargo(items []string) (int, error) {
+	m.mocked.LoadCargo.RecordCall(items)
 	if m.mocked.LoadCargo.Enabled {
 		return m.mocked.LoadCargo.NextResponse(func(items []string) (int, error) {
 			return m.real.LoadCargo(items)
@@ -668,128 +919,26 @@ func (m *mockSelfDriving) enqueueLoadCargoResponseWithDelay(output0 int, output1
 	}, d)
 }
 
-/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
-
-// GetVehicleStatus overrides the method to return the mock response
-func (m *mockSelfDriving) GetVehicleStatus() vehicle.VehicleStatus {
-	if m.mocked.GetVehicleStatus.Enabled {
-		return m.mocked.GetVehicleStatus.NextResponse(func() vehicle.VehicleStatus {
-			return m.real.GetVehicleStatus()
-		})()
-	}
-	return m.real.GetVehicleStatus()
-}
-
-// setGetVehicleStatusFunc sets the function for GetVehicleStatus
-func (m *mockSelfDriving) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
-	m.mocked.GetVehicleStatus.Fallback = f
-}
-
-// enableGetVehicleStatusMock turns the mock on
-func (m *mockSelfDriving) enableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.Enabled = true
-}
-
-// disableGetVehicleStatusMock turns the mock off
-func (m *mockSelfDriving) disableGetVehicleStatusMock() {
-	m.mocked.GetVehicleStatus.Enabled = false
-}
-
-// enqueueGetVehicleStatusResponseFunc enqueues a function response for GetVehicleStatus
-func (m *mockSelfDriving) enqueueGetVehicleStatusResponseFunc(f func() vehicle.VehicleStatus) {
-	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, 0)
-}
-
-// enqueueGetVehicleStatusResponseFuncWithDelay enqueues a function response with delay for GetVehicleStatus
-func (m *mockSelfDriving) enqueueGetVehicleStatusResponseFuncWithDelay(f func() vehicle.VehicleStatus, d time.Duration) {
-	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, d)
-}
-
-// setGetVehicleStatusResponse sets the response for GetVehicleStatus
-func (m *mockSelfDriving) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
-	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
-		return output0
-	})
-}
-
-// enqueueGetVehicleStatusResponse enqueues a static response for GetVehicleStatus
-func (m *mockSelfDriving) enqueueGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
-	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
-		return output0
-	}, 0)
-}
-
-// enqueueGetVehicleStatusResponseWithDelay enqueues a static response with delay for GetVehicleStatus
-func (m *mockSelfDriving) enqueueGetVehicleStatusResponseWithDelay(output0 vehicle.VehicleStatus, d time.Duration) {
-	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
-		time.Sleep(d)
-		return output0
-	}, d)
-}
-
-/* -------------------------- IsMoving Mock Helpers --------------------------- */
-
-// IsMoving overrides the method to return the mock response
-func (m *mockSelfDriving) IsMoving() bool {
-	if m.mocked.IsMoving.Enabled {
-		return m.mocked.IsMoving.NextResponse(func() bool {
-			return m.real.IsMoving()
-		})()
-	}
-	return m.real.IsMoving()
-}
-
-// setIsMovingFunc sets the function for IsMoving
-func (m *mockSelfDriving) setIsMovingFunc(f func() bool) {
-	m.mocked.IsMoving.Fallback = f
-}
-
-// enableIsMovingMock turns the mock on
-func (m *mockSelfDriving) enableIsMovingMock() {
-	m.mocked.IsMoving.Enabled = true
-}
-
-// disableIsMovingMock turns the mock off
-func (m *mockSelfDriving) disableIsMovingMock() {
-	m.mocked.IsMoving.Enabled = false
-}
-
-// enqueueIsMovingResponseFunc enqueues a function response for IsMoving
-func (m *mockSelfDriving) enqueueIsMovingResponseFunc(f func() bool) {
-	m.mocked.IsMoving.EnqueueWithDelay(f, 0)
-}
-
-// enqueueIsMovingResponseFuncWithDelay enqueues a function response with delay for IsMoving
-func (m *mockSelfDriving) enqueueIsMovingResponseFuncWithDelay(f func() bool, d time.Duration) {
-	m.mocked.IsMoving.EnqueueWithDelay(f, d)
-}
-
-// setIsMovingResponse sets the response for IsMoving
-func (m *mockSelfDriving) setIsMovingResponse(output0 bool) {
-	m.setIsMovingFunc(func() bool {
-		return output0
-	})
-}
-
-// enqueueIsMovingResponse enqueues a static response for IsMoving
-func (m *mockSelfDriving) enqueueIsMovingResponse(output0 bool) {
-	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
-		return output0
-	}, 0)
-}
-
-// enqueueIsMovingResponseWithDelay enqueues a static response with delay for IsMoving
-func (m *mockSelfDriving) enqueueIsMovingResponseWithDelay(output0 bool, d time.Duration) {
-	m.mocked.IsMoving.EnqueueWithDelay(func() bool {
-		time.Sleep(d)
-		return output0
-	}, d)
-}
-
 /* -------------------------- ApplyBrakes Mock Helpers --------------------------- */
+
+// enableApplyBrakesMock turns the spy on
+func (m *mockSelfDriving) enableApplyBrakesSpy() {
+	m.mocked.ApplyBrakes.SpyEnabled = true
+}
+
+// getApplyBrakesCalls returns recorded calls to ApplyBrakes
+func (m *mockSelfDriving) getApplyBrakesCalls() []stubs.MethodCall {
+	return m.mocked.ApplyBrakes.Calls()
+}
+
+// enableApplyBrakesMock turns the spy off
+func (m *mockSelfDriving) disableApplyBrakesSpy() {
+	m.mocked.ApplyBrakes.SpyEnabled = false
+}
 
 // ApplyBrakes overrides the method to return the mock response
 func (m *mockSelfDriving) ApplyBrakes(force float64) bool {
+	m.mocked.ApplyBrakes.RecordCall(force)
 	if m.mocked.ApplyBrakes.Enabled {
 		return m.mocked.ApplyBrakes.NextResponse(func(force float64) bool {
 			return m.real.ApplyBrakes(force)
@@ -845,61 +994,152 @@ func (m *mockSelfDriving) enqueueApplyBrakesResponseWithDelay(output0 bool, d ti
 	}, d)
 }
 
-/* -------------------------- DriveSelf Mock Helpers --------------------------- */
+/* -------------------------- GetVehicleStatus Mock Helpers --------------------------- */
 
-// DriveSelf overrides the method to return the mock response
-func (m *mockSelfDriving) DriveSelf(endLocation string) error {
-	if m.mocked.DriveSelf.Enabled {
-		return m.mocked.DriveSelf.NextResponse(func(endLocation string) error {
-			return m.real.DriveSelf(endLocation)
-		})(endLocation)
+// enableGetVehicleStatusMock turns the spy on
+func (m *mockSelfDriving) enableGetVehicleStatusSpy() {
+	m.mocked.GetVehicleStatus.SpyEnabled = true
+}
+
+// getGetVehicleStatusCalls returns recorded calls to GetVehicleStatus
+func (m *mockSelfDriving) getGetVehicleStatusCalls() []stubs.MethodCall {
+	return m.mocked.GetVehicleStatus.Calls()
+}
+
+// enableGetVehicleStatusMock turns the spy off
+func (m *mockSelfDriving) disableGetVehicleStatusSpy() {
+	m.mocked.GetVehicleStatus.SpyEnabled = false
+}
+
+// GetVehicleStatus overrides the method to return the mock response
+func (m *mockSelfDriving) GetVehicleStatus() vehicle.VehicleStatus {
+	m.mocked.GetVehicleStatus.RecordCall()
+	if m.mocked.GetVehicleStatus.Enabled {
+		return m.mocked.GetVehicleStatus.NextResponse(func() vehicle.VehicleStatus {
+			return m.real.GetVehicleStatus()
+		})()
 	}
-	return m.real.DriveSelf(endLocation)
+	return m.real.GetVehicleStatus()
 }
 
-// setDriveSelfFunc sets the function for DriveSelf
-func (m *mockSelfDriving) setDriveSelfFunc(f func(string) error) {
-	m.mocked.DriveSelf.Fallback = f
+// setGetVehicleStatusFunc sets the function for GetVehicleStatus
+func (m *mockSelfDriving) setGetVehicleStatusFunc(f func() vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.Fallback = f
 }
 
-// enableDriveSelfMock turns the mock on
-func (m *mockSelfDriving) enableDriveSelfMock() {
-	m.mocked.DriveSelf.Enabled = true
+// enableGetVehicleStatusMock turns the mock on
+func (m *mockSelfDriving) enableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.Enabled = true
 }
 
-// disableDriveSelfMock turns the mock off
-func (m *mockSelfDriving) disableDriveSelfMock() {
-	m.mocked.DriveSelf.Enabled = false
+// disableGetVehicleStatusMock turns the mock off
+func (m *mockSelfDriving) disableGetVehicleStatusMock() {
+	m.mocked.GetVehicleStatus.Enabled = false
 }
 
-// enqueueDriveSelfResponseFunc enqueues a function response for DriveSelf
-func (m *mockSelfDriving) enqueueDriveSelfResponseFunc(f func(string) error) {
-	m.mocked.DriveSelf.EnqueueWithDelay(f, 0)
+// enqueueGetVehicleStatusResponseFunc enqueues a function response for GetVehicleStatus
+func (m *mockSelfDriving) enqueueGetVehicleStatusResponseFunc(f func() vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, 0)
 }
 
-// enqueueDriveSelfResponseFuncWithDelay enqueues a function response with delay for DriveSelf
-func (m *mockSelfDriving) enqueueDriveSelfResponseFuncWithDelay(f func(string) error, d time.Duration) {
-	m.mocked.DriveSelf.EnqueueWithDelay(f, d)
+// enqueueGetVehicleStatusResponseFuncWithDelay enqueues a function response with delay for GetVehicleStatus
+func (m *mockSelfDriving) enqueueGetVehicleStatusResponseFuncWithDelay(f func() vehicle.VehicleStatus, d time.Duration) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(f, d)
 }
 
-// setDriveSelfResponse sets the response for DriveSelf
-func (m *mockSelfDriving) setDriveSelfResponse(output0 error) {
-	m.setDriveSelfFunc(func(string) error {
+// setGetVehicleStatusResponse sets the response for GetVehicleStatus
+func (m *mockSelfDriving) setGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
+	m.setGetVehicleStatusFunc(func() vehicle.VehicleStatus {
 		return output0
 	})
 }
 
-// enqueueDriveSelfResponse enqueues a static response for DriveSelf
-func (m *mockSelfDriving) enqueueDriveSelfResponse(output0 error) {
-	m.mocked.DriveSelf.EnqueueWithDelay(func(string) error {
+// enqueueGetVehicleStatusResponse enqueues a static response for GetVehicleStatus
+func (m *mockSelfDriving) enqueueGetVehicleStatusResponse(output0 vehicle.VehicleStatus) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
 		return output0
 	}, 0)
 }
 
-// enqueueDriveSelfResponseWithDelay enqueues a static response with delay for DriveSelf
-func (m *mockSelfDriving) enqueueDriveSelfResponseWithDelay(output0 error, d time.Duration) {
-	m.mocked.DriveSelf.EnqueueWithDelay(func(string) error {
+// enqueueGetVehicleStatusResponseWithDelay enqueues a static response with delay for GetVehicleStatus
+func (m *mockSelfDriving) enqueueGetVehicleStatusResponseWithDelay(output0 vehicle.VehicleStatus, d time.Duration) {
+	m.mocked.GetVehicleStatus.EnqueueWithDelay(func() vehicle.VehicleStatus {
 		time.Sleep(d)
 		return output0
+	}, d)
+}
+
+/* -------------------------- GetEngineSpecs Mock Helpers --------------------------- */
+
+// enableGetEngineSpecsMock turns the spy on
+func (m *mockSelfDriving) enableGetEngineSpecsSpy() {
+	m.mocked.GetEngineSpecs.SpyEnabled = true
+}
+
+// getGetEngineSpecsCalls returns recorded calls to GetEngineSpecs
+func (m *mockSelfDriving) getGetEngineSpecsCalls() []stubs.MethodCall {
+	return m.mocked.GetEngineSpecs.Calls()
+}
+
+// enableGetEngineSpecsMock turns the spy off
+func (m *mockSelfDriving) disableGetEngineSpecsSpy() {
+	m.mocked.GetEngineSpecs.SpyEnabled = false
+}
+
+// GetEngineSpecs overrides the method to return the mock response
+func (m *mockSelfDriving) GetEngineSpecs() (int, string) {
+	m.mocked.GetEngineSpecs.RecordCall()
+	if m.mocked.GetEngineSpecs.Enabled {
+		return m.mocked.GetEngineSpecs.NextResponse(func() (int, string) {
+			return m.real.GetEngineSpecs()
+		})()
+	}
+	return m.real.GetEngineSpecs()
+}
+
+// setGetEngineSpecsFunc sets the function for GetEngineSpecs
+func (m *mockSelfDriving) setGetEngineSpecsFunc(f func() (int, string)) {
+	m.mocked.GetEngineSpecs.Fallback = f
+}
+
+// enableGetEngineSpecsMock turns the mock on
+func (m *mockSelfDriving) enableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.Enabled = true
+}
+
+// disableGetEngineSpecsMock turns the mock off
+func (m *mockSelfDriving) disableGetEngineSpecsMock() {
+	m.mocked.GetEngineSpecs.Enabled = false
+}
+
+// enqueueGetEngineSpecsResponseFunc enqueues a function response for GetEngineSpecs
+func (m *mockSelfDriving) enqueueGetEngineSpecsResponseFunc(f func() (int, string)) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, 0)
+}
+
+// enqueueGetEngineSpecsResponseFuncWithDelay enqueues a function response with delay for GetEngineSpecs
+func (m *mockSelfDriving) enqueueGetEngineSpecsResponseFuncWithDelay(f func() (int, string), d time.Duration) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(f, d)
+}
+
+// setGetEngineSpecsResponse sets the response for GetEngineSpecs
+func (m *mockSelfDriving) setGetEngineSpecsResponse(output0 int, output1 string) {
+	m.setGetEngineSpecsFunc(func() (int, string) {
+		return output0, output1
+	})
+}
+
+// enqueueGetEngineSpecsResponse enqueues a static response for GetEngineSpecs
+func (m *mockSelfDriving) enqueueGetEngineSpecsResponse(output0 int, output1 string) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
+		return output0, output1
+	}, 0)
+}
+
+// enqueueGetEngineSpecsResponseWithDelay enqueues a static response with delay for GetEngineSpecs
+func (m *mockSelfDriving) enqueueGetEngineSpecsResponseWithDelay(output0 int, output1 string, d time.Duration) {
+	m.mocked.GetEngineSpecs.EnqueueWithDelay(func() (int, string) {
+		time.Sleep(d)
+		return output0, output1
 	}, d)
 }

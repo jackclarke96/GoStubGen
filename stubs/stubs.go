@@ -1,20 +1,65 @@
 package stubs
 
 import (
+	"reflect"
 	"sync"
 	"time"
 )
 
-type QueuedItem[T any] struct {
-	Fn    T
-	Delay time.Duration
+type MethodCall struct {
+	Timestamp time.Time
+	Args      []any
 }
 
 type MethodConfig[T any] struct {
-	Enabled  bool
-	mu       sync.Mutex
-	queue    []QueuedItem[T]
-	Fallback interface{}
+	Enabled    bool
+	SpyEnabled bool
+	mu         sync.Mutex
+	queue      []QueuedItem[T]
+	Fallback   interface{}
+
+	spyCalls []MethodCall
+}
+
+func (m *MethodConfig[T]) RecordCall(args ...any) {
+	if !m.SpyEnabled {
+		return
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.spyCalls = append(m.spyCalls, MethodCall{
+		Timestamp: time.Now(),
+		Args:      args,
+	})
+}
+
+func (m *MethodConfig[T]) CallCount() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.spyCalls)
+}
+
+func (m *MethodConfig[T]) Calls() []MethodCall {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return append([]MethodCall(nil), m.spyCalls...)
+}
+
+func (m *MethodCall) ArgsEqual(expected ...any) bool {
+	if len(m.Args) != len(expected) {
+		return false
+	}
+	for i := range m.Args {
+		if m.Args[i] != expected[i] {
+			return false
+		}
+	}
+	return true
+}
+
+type QueuedItem[T any] struct {
+	Fn    T
+	Delay time.Duration
 }
 
 // Set a Fallback function
@@ -95,4 +140,21 @@ func (m *MethodConfig[T]) NextResponse(defaultFunc T) T {
 	}
 
 	return defaultFunc
+}
+
+// TODO test this and use
+func MapsEqual(a, b reflect.Value) bool {
+	if a.Len() != b.Len() {
+		return false
+	}
+
+	for _, key := range a.MapKeys() {
+		av := a.MapIndex(key)
+		bv := b.MapIndex(key)
+		if !bv.IsValid() || !reflect.DeepEqual(av.Interface(), bv.Interface()) {
+			return false
+		}
+	}
+
+	return true
 }
