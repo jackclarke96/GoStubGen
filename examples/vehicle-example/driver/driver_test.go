@@ -9,7 +9,7 @@ import (
 )
 
 // TODO: enable mock for repsponses 1,2 and 3 but use real for 4
-// TODO: spy
+// TODO: spy: still todo compare args including slices, maps, etc.
 // TODO: setResponseTimes (same response three times in a row for example).
 // TODO: channels for background stuff
 // TODO: can things be more generic?
@@ -132,12 +132,12 @@ func TestDriverDrive_spyLoadCargo(t *testing.T) {
 	}
 
 	// Validate arguments
-	// expected := []any{[]string{"clothes", "toiletries", "electronics"}}
+	expected := []any{[]string{"clothes", "toiletries", "electronics"}, []string{"clothes", "toiletries", "electronics", "more stuff"}}
 	for i, call := range calls {
 		fmt.Printf("Call #%d: Args = %+v\n", i+1, call.Args)
-		// if !call.ArgsEqual(expected...) {
-		// 	t.Errorf("call %d arguments did not match expected.\nGot:  %+v\nWant: %+v", i+1, call.Args, expected)
-		// }
+		if !call.ArgsEqual(expected[i]) {
+			t.Errorf("call %d arguments did not match expected.\nGot:  %+v\nWant: %+v", i+1, call.Args, expected)
+		}
 	}
 }
 

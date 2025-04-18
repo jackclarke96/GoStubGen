@@ -50,7 +50,7 @@ func (m *MethodCall) ArgsEqual(expected ...any) bool {
 		return false
 	}
 	for i := range m.Args {
-		if m.Args[i] != expected[i] {
+		if !reflect.DeepEqual(m.Args[i], expected[i]) {
 			return false
 		}
 	}
