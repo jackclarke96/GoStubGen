@@ -153,6 +153,29 @@ interfaces:
         outputs:
           - type: error
 
+      - name: ParkSelf
+        description: "Should be used after driving"
+        outputs:
+          - type: error
+
+      - name: LockDoors
+        description: "Should be used after driving"
+        outputs:
+          - type: error
+
+      - name: TurnOffAC
+        description: "Should be used after driving"
+        outputs:
+          - type: error
+      - name: TurnOffMusic
+        description: "Should be used after driving"
+        outputs:
+          - type: error
+      - name: CloseWindows
+        description: "Should be used after driving"
+        outputs:
+          - type: error
+
 implementers:
   - name: Car
     implements: ["Vehicle"]

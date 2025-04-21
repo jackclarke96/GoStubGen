@@ -15,7 +15,32 @@ func NewRoboCar() *RoboCar {
 	}
 }
 
+// Should be used after driving
+func (s *RoboCar) TurnOffAC() error {
+	return nil
+}
+
+// Should be used after driving
+func (s *RoboCar) LockDoors() error {
+	return nil
+}
+
 // driverless driving
 func (s *RoboCar) DriveSelf(endLocation string) error {
+	return nil
+}
+
+// Should be used after driving
+func (s *RoboCar) CloseWindows() error {
+	return nil
+}
+
+// Should be used after driving
+func (s *RoboCar) ParkSelf() error {
+	return nil
+}
+
+// Should be used after driving
+func (s *RoboCar) TurnOffMusic() error {
 	return nil
 }

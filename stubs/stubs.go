@@ -158,3 +158,46 @@ func MapsEqual(a, b reflect.Value) bool {
 
 	return true
 }
+
+type TestingT interface {
+	Helper()
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+}
+
+// WaitForResult waits for a result on a channel or fails after timeout.
+func WaitForResult[T any](t TestingT, ch <-chan T, timeout time.Duration) T {
+	t.Helper()
+	select {
+	case result := <-ch:
+		return result
+	case <-time.After(timeout):
+		t.Fatalf("timeout waiting for background task")
+		var zero T
+		return zero
+	}
+}
+
+// MustPanic asserts that the given function panics.
+func MustPanic(t TestingT, fn func()) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic, but got none")
+		}
+	}()
+	fn()
+}
+
+// WaitForSpyCall blocks until at least one spy call is recorded or times out.
+func WaitForSpyCall(t TestingT, getCalls func() []MethodCall, timeout time.Duration) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if len(getCalls()) > 0 {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatal("timeout waiting for spy call")
+}
