@@ -23,6 +23,7 @@ func generateMockStruct() string {
 type {{ .MockName }} struct {
 	real   {{ .Package }}.{{ .Interface }}
 	mocked {{ .MockConfigName }}
+	responseChans map[string]any
 }`
 }
 
@@ -32,6 +33,7 @@ func {{ .MockFactory }}(v {{ .Package }}.{{ .Interface }}) *{{ .MockName }} {
 	return &{{ .MockName }}{
 		real:   v,
 		mocked: {{ .MockConfigName }}{},
+		responseChans: make(map[string]any),
 	}
 }`
 }
@@ -44,24 +46,45 @@ const methodOverrideTemplate = `
 // {{ .Name }} overrides the method to return the mock response
 func (m *{{ .MockName }}) {{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}){{ if gt (len .Outputs) 0 }} ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}){{ end }} {
 	m.mocked.{{ title .Name }}.RecordCall({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+	var (
+		{{ range $i, $o := .Outputs }}out{{ $i }} {{ $o.Type }}
+		{{ end }}
+		{{ if gt (len .Outputs) 1 }}result {{ .MockName }}{{ title .Name }}Result{{ end }}
+	)
+
 	if m.mocked.{{ title .Name }}.Enabled {
-		{{- if gt (len .Outputs) 0 }}
-		return m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
+		{{ if gt (len .Outputs) 0 }}
+		{{- range $i, $_ := .Outputs }}{{ if $i }}, {{ end }}out{{ $i }}{{ end }} = m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) ({{ range $i, $o := .Outputs }}{{ if $i }}, {{ end }}{{ $o.Type }}{{ end }}) {
 			return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
 		})({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
-		{{- else }}
-		m.mocked.{{ .Name }}.NextResponse(func({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }} {{ $p.Type }}{{ end }}) {
-			m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
-		})({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
-		return
-		{{- end }}
+		{{ end }}
+	} else {
+		{{ if gt (len .Outputs) 0 }}
+		{{- range $i, $_ := .Outputs }}{{ if $i }}, {{ end }}out{{ $i }}{{ end }} = m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
+		{{ end }}
 	}
-	{{- if gt (len .Outputs) 0 }}
-	return m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
-	{{- else }}
-	m.real.{{ .Name }}({{ range $i, $p := .Inputs }}{{ if $i }}, {{ end }}{{ $p.Name }}{{ end }})
-	{{- end }}
-}`
+
+	{{ if gt (len .Outputs) 1 }}
+	result = {{ .MockName }}{{ title .Name }}Result{
+		{{ range $i, $_ := .Outputs }}Output{{ $i }}: out{{ $i }}, {{ end }}
+	}
+	if ch, ok := m.responseChans["{{ .Name }}"]; ok {
+		chTyped := ch.(chan {{ .MockName }}{{ title .Name }}Result)
+		chTyped <- result
+	}
+	return {{ range $i, $_ := .Outputs }}{{ if $i }}, {{ end }}result.Output{{ $i }}{{ end }}
+	{{ else if eq (len .Outputs) 1 }}
+	if ch, ok := m.responseChans["{{ .Name }}"]; ok {
+		chTyped := ch.(chan {{ (index .Outputs 0).Type }})
+		chTyped <- out0
+	}
+	return out0
+	{{ end }}
+	{{ if eq (len .Outputs) 0 }}
+	return
+	{{ end }}
+}
+`
 
 const setFuncTemplate = `
 // set{{ title .Name }}Func sets the function for {{ .Name }}
@@ -137,6 +160,31 @@ func (m *{{ .MockName }}) enqueue{{ title .Name }}ResponseWithDelay({{ range $i,
 	}, d)
 }`
 
+const captureResultTemplate = `
+// capture{{ title .Name }}Result sets up a channel to capture {{ .Name }} results.
+func (m *{{ .MockName }}) capture{{ title .Name }}Result() <-chan {{ if gt (len .Outputs) 1 }}{{ .MockName }}{{ title .Name }}Result{{ else if eq (len .Outputs) 1 }}{{ (index .Outputs 0).Type }}{{ else }}struct{}{{ end }} {
+	ch := make(chan {{ if gt (len .Outputs) 1 }}{{ .MockName }}{{ title .Name }}Result{{ else if eq (len .Outputs) 1 }}{{ (index .Outputs 0).Type }}{{ else }}struct{}{{ end }}, 1)
+	m.responseChans["{{ .Name }}"] = ch
+	return ch
+}`
+const captureSpyCallTemplate = `
+// capture{{ title .Name }}CallSpy starts watching for {{ .Name }} spy calls and sends them into a channel.
+func (m *{{ .MockName }}) capture{{ title .Name }}CallSpy(t *testing.T, timeout time.Duration) <-chan []stubs.MethodCall {
+	ch := make(chan []stubs.MethodCall, 1)
+	go func() {
+		stubs.WaitForSpyCall(t, m.get{{ title .Name }}Calls, timeout)
+		ch <- m.get{{ title .Name }}Calls()
+	}()
+	return ch
+}`
+
+const tupleStructTemplate = `
+type {{ .MockName }}{{ title .Name }}Result struct {
+{{ range $i, $o := .Outputs }}
+	Output{{ $i }} {{ $o.Type }}
+{{- end }}
+}`
+
 func writeTemplate(w io.Writer, tmplStr string, data any, funcs template.FuncMap) error {
 	tmpl, err := template.New("").Funcs(funcs).Parse(tmplStr)
 	if err != nil {
@@ -161,7 +209,36 @@ func GenerateMock(spec InterfaceSpec, structSpec StructSpec, common CommonSpec) 
 		"title": func(s string) string {
 			return strings.Title(s)
 		},
+		"lower": func(s string) string {
+			if len(s) == 0 {
+				return s
+			}
+			return strings.ToLower(s[:1]) + s[1:]
+		},
 		"responseSignature": func(inputs, outputs []Param) string {
+			var b strings.Builder
+			b.WriteString("func(")
+			for i, in := range inputs {
+				if i > 0 {
+					b.WriteString(", ")
+				}
+				b.WriteString(in.Type)
+			}
+			b.WriteString(")")
+			if len(outputs) > 0 {
+				b.WriteString(" (")
+				for i, out := range outputs {
+					if i > 0 {
+						b.WriteString(", ")
+					}
+					b.WriteString(out.Type)
+				}
+				b.WriteString(")")
+			}
+			return b.String()
+		},
+		// come back here
+		"outputVars": func(inputs, outputs []Param) string {
 			var b strings.Builder
 			b.WriteString("func(")
 			for i, in := range inputs {
@@ -249,6 +326,9 @@ import "github.com/jackclarke/GoStubGen/stubs"
 			disableTemplate,
 			enqueueFuncTemplate,
 			enqueueFuncWithDelayTemplate,
+			captureResultTemplate,
+			captureSpyCallTemplate,
+			tupleStructTemplate,
 		} {
 			if err := writeTemplate(file, tmplStr, data, funcs); err != nil {
 				return err

@@ -52,7 +52,9 @@ interfaces:
         inputs: []
         outputs:
           - type: string
+            name: location
           - type: error
+            name: err
 
       - name: Accelerate
         description: "Increase speed in curent direction"
@@ -63,7 +65,9 @@ interfaces:
             type: string
         outputs:
           - type: int
+            name: newSpeed
           - type: error
+            name: err
 
       - name: IsMoving
         description:
@@ -71,6 +75,7 @@ interfaces:
         inputs: []
         outputs:
           - type: bool
+            name: isMoving
 
       - name: Honk
         description: "Honks the provided number of times"
@@ -95,6 +100,7 @@ interfaces:
             type: float64
         outputs:
           - type: bool
+            name: applied
 
       - name: ChangeGears
         description: "change gears"
@@ -103,19 +109,23 @@ interfaces:
             type: int
         outputs:
           - type: int
+            name: before
           - type: int
+            name: after
 
       - name: Telemetry
         description: "get telemetry data in a map"
         inputs: []
         outputs:
           - type: "map[string]float64"
+            name: telemetryData
 
       - name: GetPassengers
         description: "returns names of passengers currently in/on vehicle"
         inputs: []
         outputs:
           - type: "[]string"
+            name: passengers
 
       - name: LoadCargo
         description:
@@ -126,13 +136,16 @@ interfaces:
             type: "[]string"
         outputs:
           - type: int
+            name: loaded
           - type: error
+            name: err
 
       - name: GetVehicleStatus
         description: "Returns current status of vehicle."
         inputs: []
         outputs:
           - type: VehicleStatus
+            name: vehicleStatus
 
       - name: UpdateStatus
         description: "Updates current status of vehicle."
@@ -141,6 +154,7 @@ interfaces:
             type: VehicleStatus
         outputs:
           - type: error
+            name: err
 
   - name: SelfDriving
     embedded: [Vehicle]
@@ -152,29 +166,37 @@ interfaces:
             type: string
         outputs:
           - type: error
+            name: err
 
       - name: ParkSelf
         description: "Should be used after driving"
         outputs:
           - type: error
+            name: err
 
       - name: LockDoors
         description: "Should be used after driving"
         outputs:
           - type: error
+            name: err
 
       - name: TurnOffAC
         description: "Should be used after driving"
         outputs:
           - type: error
+            name: err
+
       - name: TurnOffMusic
         description: "Should be used after driving"
         outputs:
           - type: error
+            name: err
+
       - name: CloseWindows
         description: "Should be used after driving"
         outputs:
           - type: error
+            name: err
 
 implementers:
   - name: Car

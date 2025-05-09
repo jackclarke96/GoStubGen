@@ -201,3 +201,46 @@ func WaitForSpyCall(t TestingT, getCalls func() []MethodCall, timeout time.Durat
 	}
 	t.Fatal("timeout waiting for spy call")
 }
+
+// WaitForSpyCallMatching waits until a spy call matching the condition is recorded or times out.
+func WaitForSpyCallMatching(t TestingT, getCalls func() []MethodCall, match func(MethodCall) bool, timeout time.Duration) {
+	t.Helper()
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		for _, call := range getCalls() {
+			if match(call) {
+				return
+			}
+		}
+
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatal("timeout waiting for matching spy call")
+}
+
+// WaitForSpyCallArgsEqual waits until a spy call with matching args is recorded or times out.
+func WaitForSpyCallArgsEqual(t TestingT, getCalls func() []MethodCall, timeout time.Duration, expectedArgs ...any) {
+	WaitForSpyCallMatching(t, getCalls, func(call MethodCall) bool {
+		return call.ArgsEqual(expectedArgs...)
+	}, timeout)
+}
+
+func WaitForMultipleSpyCalls(t TestingT, getCalls func() []MethodCall, timeout time.Duration, expectedArgsList ...[]any) {
+	t.Helper()
+	done := make(chan struct{}, len(expectedArgsList))
+
+	for _, args := range expectedArgsList {
+		go func(args []any) {
+			WaitForSpyCallArgsEqual(t, getCalls, timeout, args...)
+			done <- struct{}{}
+		}(args)
+	}
+
+	for i := 0; i < len(expectedArgsList); i++ {
+		select {
+		case <-done:
+		case <-time.After(timeout):
+			t.Fatalf("timeout waiting for all spy calls")
+		}
+	}
+}
