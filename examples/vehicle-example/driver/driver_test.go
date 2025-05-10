@@ -173,14 +173,6 @@ func TestInstructSelfDriver_TriggersDeferredPark(t *testing.T) {
 	driver := &Driver{vehicle: mock}
 	mock.enableParkSelfMock()
 
-	// This will receive the result of ParkSelf (from inside defer)
-	parkResult := make(chan error, 1)
-	mock.setParkSelfFunc(func() error {
-		time.Sleep(10 * time.Millisecond)
-		parkResult <- nil
-		return nil
-	})
-
 	expectedErr := errors.New("Uh oh")
 
 	mock.setParkSelfFunc(func() error {
@@ -241,16 +233,6 @@ func TestInstructSelfDriver_TriggersDeferredParkPanic(t *testing.T) {
 	if got != nil {
 		t.Fatalf("expected no error from ParkSelf, got: %v", got)
 	}
-}
-
-func (m *mockSelfDriving) captureParkSelfCall(delay time.Duration, resp error) <-chan error {
-	ch := make(chan error, 1)
-	m.setParkSelfFunc(func() error {
-		time.Sleep(delay)
-		ch <- resp
-		return resp
-	})
-	return ch
 }
 
 func (m *mockSelfDriving) captureParkSelfCallFunc(parkSelfFunc func() error) <-chan error {

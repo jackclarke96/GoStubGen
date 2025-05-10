@@ -1824,9 +1824,8 @@ func (m *mockSelfDriving) disableAccelerateSpy() {
 func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
 	m.mocked.Accelerate.RecordCall(speed, unit)
 	var (
-		out0 int
-		out1 error
-
+		out0   int
+		out1   error
 		result mockSelfDrivingAccelerateResult
 	)
 
@@ -1834,10 +1833,8 @@ func (m *mockSelfDriving) Accelerate(speed int, unit string) (int, error) {
 		out0, out1 = m.mocked.Accelerate.NextResponse(func(speed int, unit string) (int, error) {
 			return m.real.Accelerate(speed, unit)
 		})(speed, unit)
-
 	} else {
 		out0, out1 = m.real.Accelerate(speed, unit)
-
 	}
 
 	result = mockSelfDrivingAccelerateResult{
