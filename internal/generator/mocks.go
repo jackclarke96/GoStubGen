@@ -107,7 +107,7 @@ func (m *{{ .MockName }}) enable{{ title .Name }}Mock() {
 }`
 
 const enableSpyTemplate = `
-// enable{{ title .Name }}Mock turns the spy on
+// enable{{ title .Name }}Spy turns the spy on
 func (m *{{ .MockName }}) enable{{ title .Name }}Spy() {
 	m.mocked.{{ title .Name }}.SpyEnabled = true
 }`
@@ -120,7 +120,7 @@ func (m *{{ .MockName }}) get{{ title .Name }}Calls() []stubs.MethodCall {
 `
 
 const disableSpyTemplate = `
-// enable{{ title .Name }}Mock turns the spy off
+// enable{{ title .Name }}Spy turns the spy off
 func (m *{{ .MockName }}) disable{{ title .Name }}Spy() {
 	m.mocked.{{ title .Name }}.SpyEnabled = false
 }`
